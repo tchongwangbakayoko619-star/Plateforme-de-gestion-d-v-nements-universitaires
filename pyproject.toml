@@ -32,8 +32,8 @@ dependencies = [
   "python-slugify==8.0.4",
   "redis==8.0.1",
   "sentry-sdk==2.66.0",
-  "uvicorn-worker==0.4.0",
   "uvicorn[standard]==0.51.0",
+  "uvicorn-worker==0.4.0",
   "whitenoise==6.12.0",
 ]
 
@@ -63,16 +63,16 @@ dev = [
 
 # ==== djLint ====
 [tool.djlint]
+profile = "django"
+include = "H017,H035"
+indent = 2
+max_line_length = 119
 blank_line_after_tag = "load,extends"
 close_void_tags = true
 format_css = true
 format_js = true
 # TODO: remove T002 when fixed https://github.com/djlint/djLint/issues/687
 ignore = "H006,H030,H031,T002"
-include = "H017,H035"
-indent = 2
-max_line_length = 119
-profile = "django"
 css.indent_size = 2
 js.indent_size = 2
 
@@ -83,7 +83,6 @@ extend-exclude = [
   "*/migrations/*.py",
   "staticfiles/*",
 ]
-
 lint.select = [
   "A",
   "ASYNC",
@@ -148,6 +147,25 @@ lint.isort.force-single-line = true
 [tool.pyproject-fmt]
 keep_full_version = true
 
+# ==== mypy ====
+[tool.mypy]
+ignore_missing_imports = true
+python_version = "3.14"
+check_untyped_defs = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+plugins = [
+  "mypy_django_plugin.main",
+]
+warn_unused_configs = true
+overrides = [
+  # Django migrations should not produce any errors:
+  { module = "*.migrations.*", ignore_errors = true },
+]
+
+[tool.django-stubs]
+django_settings_module = "config.settings.test"
+
 # ==== pytest ====
 [tool.pytest]
 addopts = [
@@ -161,28 +179,8 @@ python_files = [
   "test_*.py",
 ]
 
+[tool.coverage]
 # ==== Coverage ====
-[tool.coverage.run]
-include = [ "gather/**" ]
-omit = [ "*/migrations/*", "*/tests/*" ]
-plugins = [ "django_coverage_plugin" ]
-
-# ==== mypy ====
-[tool.mypy]
-python_version = "3.14"
-check_untyped_defs = true
-ignore_missing_imports = true
-warn_unused_ignores = true
-warn_redundant_casts = true
-warn_unused_configs = true
-plugins = [
-  "mypy_django_plugin.main",
-]
-
-[[tool.mypy.overrides]]
-# Django migrations should not produce any errors:
-module = "*.migrations.*"
-ignore_errors = true
-
-[tool.django-stubs]
-django_settings_module = "config.settings.test"
+run.include = [ "gather/**" ]
+run.omit = [ "*/migrations/*", "*/tests/*" ]
+run.plugins = [ "django_coverage_plugin" ]
