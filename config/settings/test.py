@@ -2,9 +2,27 @@
 With these settings, tests run faster.
 """
 
+import os
+
+# Set DATABASE_URL for SQLite before importing base settings
+# to avoid requiring the DATABASE_URL environment variable
+os.environ.setdefault("DATABASE_URL", "sqlite:///test_db")
+
 from .base import *  # noqa: F403
 from .base import TEMPLATES
 from .base import env
+
+# DATABASES
+# ------------------------------------------------------------------------------
+# https://docs.djangoproject.com/en/dev/ref/settings/#databases
+# Use SQLite for tests to avoid needing DATABASE_URL environment variable
+DATABASES = {
+    "default": {
+        "ENGINE": "django.db.backends.sqlite3",
+        "NAME": "test_db",
+    },
+}
+DATABASES["default"]["ATOMIC_REQUESTS"] = True
 
 # GENERAL
 # ------------------------------------------------------------------------------
