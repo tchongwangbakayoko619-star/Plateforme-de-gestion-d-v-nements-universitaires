@@ -1,0 +1,17 @@
+services:
+  docs:
+    image: gather_local_docs
+    container_name: gather_local_docs
+    build:
+      context: .
+      dockerfile: ./compose/local/docs/Dockerfile
+    env_file:
+      - ./.envs/.local/.django
+    volumes:
+      - /app/.venv
+      - ./docs:/docs:z
+      - ./config:/app/config:z
+      - ./gather:/app/gather:z
+    ports:
+      - '9000:9000'
+    command: /start-docs
