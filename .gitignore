@@ -275,3 +275,4 @@ gather/media/
 .ipython/
 .env
 .envs/*
+.documentation
