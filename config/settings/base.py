@@ -97,8 +97,8 @@ THIRD_PARTY_APPS = [
 
 LOCAL_APPS = [
     "gather.users",
-    "gather.students",
-    "gather.organizers",
+    "gather.students.apps.StudentsConfig",
+    "gather.organizers.apps.OrganizersConfig",
     # Your stuff: custom apps go here
 ]
 # https://docs.djangoproject.com/en/dev/ref/settings/#installed-apps

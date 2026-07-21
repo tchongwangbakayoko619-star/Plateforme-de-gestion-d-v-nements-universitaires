@@ -523,8 +523,8 @@ Ce projet est sous licence MIT. Voir le fichier [LICENSE](LICENSE) pour plus d'i
 
 ## 📝 Mise à Jour
 
-**Version** : 1.0.0  
-**Dernière mise à jour** : Juillet 2026  
+**Version** : 1.0.0
+**Dernière mise à jour** : Juillet 2026
 **Statut** : En développement
 
 ---
