@@ -10,6 +10,9 @@ from django.views.generic import DetailView
 from django.views.generic import FormView
 from django.views.generic import RedirectView
 from django.views.generic import UpdateView
+from django.views.generic import ListView
+from .forms import AdminImportUsersCSVForm
+
 
 from gather.users.mixins import RoleRequiredMixin
 from gather.users.models import User
@@ -79,3 +82,61 @@ class AdminCreateUserView(RoleRequiredMixin, FormView):
             _("Utilisateur %(email)s créé avec succès.") % {"email": user.email},
         )
         return redirect(self.success_url)
+
+class AdminUserListView(RoleRequiredMixin, ListView):
+    """Liste des utilisateurs, réservée aux administrateurs."""
+
+    model = User
+    template_name = "users/admin_list.html"
+    context_object_name = "users"
+    allowed_roles = [User.Role.ADMIN]
+    paginate_by = 25
+
+    def get_queryset(self):
+        from gather.users.services import UserService
+
+        filters = {}
+        role = self.request.GET.get("role")
+        search = self.request.GET.get("search")
+        if role:
+            filters["role"] = role
+        if search:
+            filters["search"] = search
+        return UserService.get_users(filters=filters or None)
+
+
+admin_user_list_view = AdminUserListView.as_view()
+
+
+class AdminImportUsersView(RoleRequiredMixin, FormView):
+    """Import en masse d'utilisateurs depuis un fichier CSV."""
+
+    template_name = "users/admin_import_users.html"
+    form_class = AdminImportUsersCSVForm
+    allowed_roles = [User.Role.ADMIN]
+    success_url = reverse_lazy("users:admin_list")
+
+    def form_valid(self, form):
+        fichier = form.cleaned_data["fichier_csv"]
+        results = AdminUserService.import_from_csv(fichier, self.request.user)
+
+        nb_crees = len(results["created"])
+        nb_erreurs = len(results["errors"])
+
+        if nb_crees:
+            messages.success(
+                self.request,
+                _("%(n)d utilisateur(s) importé(s) avec succès.") % {"n": nb_crees},
+            )
+        if nb_erreurs:
+            for err in results["errors"]:
+                messages.warning(
+                    self.request,
+                    _("Ligne %(row)s : %(error)s")
+                    % {"row": err.get("row"), "error": err.get("error") or err.get("message")},
+                )
+
+        return redirect(self.success_url)
+
+
+admin_import_users_view = AdminImportUsersView.as_view()    

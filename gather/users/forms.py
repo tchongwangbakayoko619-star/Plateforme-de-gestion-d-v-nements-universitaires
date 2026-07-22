@@ -1,8 +1,8 @@
 # gather/users/forms.py
 from allauth.account.forms import SignupForm
+from django import forms
 from django.contrib.auth import forms as admin_forms
 from django.contrib.auth import get_user_model
-from django import forms
 from django.utils.translation import gettext_lazy as _
 
 User = get_user_model()
@@ -87,3 +87,18 @@ class AdminCreateUserForm(forms.Form):
                 )
 
         return cleaned_data
+
+
+class AdminImportUsersCSVForm(forms.Form):
+    """Formulaire d'upload pour l'import en masse d'utilisateurs via CSV."""
+
+    fichier_csv = forms.FileField(
+        label=_("Fichier CSV"),
+        help_text=_("Colonnes attendues : email, first_name, last_name, role"),
+    )
+
+    def clean_fichier_csv(self):
+        fichier = self.cleaned_data["fichier_csv"]
+        if not fichier.name.endswith(".csv"):
+            raise forms.ValidationError(_("Le fichier doit être au format .csv"))
+        return fichier
