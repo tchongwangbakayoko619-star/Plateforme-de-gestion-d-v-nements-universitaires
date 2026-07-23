@@ -9,7 +9,6 @@ on:
   pull_request:
     branches: ['main']
     paths-ignore: ['docs/**']
-
   push:
     branches: ['main']
     paths-ignore: ['docs/**']
@@ -29,6 +28,7 @@ jobs:
         uses: actions/setup-python@v6
         with:
           python-version-file: '.python-version'
+
       - name: Run pre-commit
         uses: pre-commit/action@v3.0.1
 
@@ -39,6 +39,39 @@ jobs:
     steps:
       - name: Checkout Code Repository
         uses: actions/checkout@v6
+
+      # Cookiecutter Django ignore .envs/ dans git (contient des secrets),
+      # donc le runner CI doit générer ses propres fichiers d'environnement
+      # avant toute étape docker build/bake.
+      - name: Create env files
+        run: |
+          mkdir -p .envs/.local
+          printf '%s\n' \
+            'USE_DOCKER=yes' \
+            'IPYTHONDIR=/app/.ipython' \
+            'DEBUG=True' \
+            'DJANGO_SETTINGS_MODULE=config.settings.local' \
+            'DJANGO_SECRET_KEY=ci-test-secret-key-not-for-production' \
+            'DJANGO_ADMIN_URL=admin/' \
+            'DJANGO_ALLOWED_HOSTS=localhost,0.0.0.0,127.0.0.1' \
+            'REDIS_URL=redis://redis:6379/0' \
+            'CELERY_FLOWER_USER=ciuser' \
+            'CELERY_FLOWER_PASSWORD=cipassword' \
+            'DB_ENGINE=django.db.backends.postgresql' \
+            'DB_NAME=gather' \
+            'DB_USER=debug' \
+            'DB_PASSWORD=debug' \
+            'DB_HOST=postgres' \
+            'DB_PORT=5432' \
+            > .envs/.local/.django
+
+          printf '%s\n' \
+            'POSTGRES_HOST=postgres' \
+            'POSTGRES_PORT=5432' \
+            'POSTGRES_DB=gather' \
+            'POSTGRES_USER=debug' \
+            'POSTGRES_PASSWORD=debug' \
+            > .envs/.local/.postgres
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3

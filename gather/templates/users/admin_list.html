@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+
+{% load i18n %}
+
+{% block title %}
+  {% translate "Utilisateurs" %}
+{% endblock title %}
+{% block content %}
+  <h1>{% translate "Liste des utilisateurs" %}</h1>
+  <p>
+    <a href="{% url 'users:admin_create' %}">{% translate "Créer un utilisateur" %}</a>
+    |
+    <a href="{% url 'users:admin_import' %}">{% translate "Importer via CSV" %}</a>
+  </p>
+  <form method="get">
+    <input type="text"
+           name="search"
+           placeholder="{% translate 'Rechercher...' %}"
+           value="{{ request.GET.search }}" />
+    <select name="role">
+      <option value="">{% translate "Tous les rôles" %}</option>
+      <option value="etudiant">{% translate "Étudiant" %}</option>
+      <option value="organisateur">{% translate "Organisateur" %}</option>
+      <option value="admin">{% translate "Administrateur" %}</option>
+    </select>
+    <button type="submit">{% translate "Filtrer" %}</button>
+  </form>
+  <table>
+    <thead>
+      <tr>
+        <th>{% translate "Email" %}</th>
+        <th>{% translate "Nom" %}</th>
+        <th>{% translate "Rôle" %}</th>
+        <th>{% translate "Actif" %}</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for user in users %}
+        <tr>
+          <td><a href="{% url 'users:detail' user.pk %}">{{ user.email }}</a></td>
+          <td>{{ user.get_full_name }}</td>
+          <td>{{ user.get_role_display }}</td>
+          <td>{{ user.is_active|yesno:"Oui,Non" }}</td>
+        </tr>
+      {% empty %}
+        <tr>
+          <td colspan="4">{% translate "Aucun utilisateur." %}</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% if is_paginated %}
+    <div>
+      {% if page_obj.has_previous %}
+        <a href="?page={{ page_obj.previous_page_number }}">{% translate "Précédent" %}</a>
+      {% endif %}
+      <span>{{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span>
+      {% if page_obj.has_next %}
+        <a href="?page={{ page_obj.next_page_number }}">{% translate "Suivant" %}</a>
+      {% endif %}
+    </div>
+  {% endif %}
+{% endblock content %}
