@@ -1,6 +1,7 @@
 # gather/users/views.py
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.messages.views import SuccessMessageMixin
 from django.core.exceptions import ValidationError
 from django.shortcuts import redirect
 from django.urls import reverse
@@ -30,7 +31,7 @@ class UserDetailView(LoginRequiredMixin, DetailView):
 user_detail_view = UserDetailView.as_view()
 
 
-class UserUpdateView(LoginRequiredMixin, UpdateView):
+class UserUpdateView(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
     model = User
     fields = ["first_name", "last_name"]
     success_message = _("Information successfully updated")
