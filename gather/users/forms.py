@@ -60,14 +60,29 @@ class AdminCreateUserForm(forms.Form):
     # Champs spécifiques Étudiant (optionnels selon le rôle)
     matricule = forms.CharField(label=_("Matricule"), max_length=30, required=False)
     filiere = forms.CharField(label=_("Filière"), max_length=150, required=False)
-    departement = forms.CharField(label=_("Département"), max_length=150, required=False)
-    niveau_etude = forms.CharField(label=_("Niveau d'étude"), max_length=20, required=False)
+    departement = forms.CharField(
+        label=_("Département"),
+        max_length=150,
+        required=False,
+    )
+    niveau_etude = forms.CharField(
+        label=_("Niveau d'étude"),
+        max_length=20,
+        required=False,
+    )
     promotion = forms.CharField(label=_("Promotion"), max_length=9, required=False)
 
     # Champs spécifiques Organisateur (optionnels selon le rôle)
-    club = forms.CharField(label=_("Club / Association"), max_length=255, required=False)
+    club = forms.CharField(
+        label=_("Club / Association"),
+        max_length=255,
+        required=False,
+    )
     poste = forms.ChoiceField(label=_("Poste"), required=False, choices=[("", "---")])
-    date_debut_mandat = forms.DateField(label=_("Date de prise de fonction"), required=False)
+    date_debut_mandat = forms.DateField(
+        label=_("Date de prise de fonction"),
+        required=False,
+    )
 
     def clean(self):
         """Validation croisée : les champs requis dépendent du rôle choisi."""

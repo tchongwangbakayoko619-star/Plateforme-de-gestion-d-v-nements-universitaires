@@ -8,17 +8,17 @@ from django.urls import reverse_lazy
 from django.utils.translation import gettext_lazy as _
 from django.views.generic import DetailView
 from django.views.generic import FormView
+from django.views.generic import ListView
 from django.views.generic import RedirectView
 from django.views.generic import UpdateView
-from django.views.generic import ListView
-from .forms import AdminImportUsersCSVForm
-
 
 from gather.users.mixins import RoleRequiredMixin
 from gather.users.models import User
 from gather.users.services import AdminUserService
+from gather.users.services import UserService
 
 from .forms import AdminCreateUserForm
+from .forms import AdminImportUsersCSVForm
 
 
 class UserDetailView(LoginRequiredMixin, DetailView):
@@ -83,6 +83,7 @@ class AdminCreateUserView(RoleRequiredMixin, FormView):
         )
         return redirect(self.success_url)
 
+
 class AdminUserListView(RoleRequiredMixin, ListView):
     """Liste des utilisateurs, réservée aux administrateurs."""
 
@@ -93,8 +94,6 @@ class AdminUserListView(RoleRequiredMixin, ListView):
     paginate_by = 25
 
     def get_queryset(self):
-        from gather.users.services import UserService
-
         filters = {}
         role = self.request.GET.get("role")
         search = self.request.GET.get("search")
@@ -133,10 +132,13 @@ class AdminImportUsersView(RoleRequiredMixin, FormView):
                 messages.warning(
                     self.request,
                     _("Ligne %(row)s : %(error)s")
-                    % {"row": err.get("row"), "error": err.get("error") or err.get("message")},
+                    % {
+                        "row": err.get("row"),
+                        "error": err.get("error") or err.get("message"),
+                    },
                 )
 
         return redirect(self.success_url)
 
 
-admin_import_users_view = AdminImportUsersView.as_view()    
+admin_import_users_view = AdminImportUsersView.as_view()

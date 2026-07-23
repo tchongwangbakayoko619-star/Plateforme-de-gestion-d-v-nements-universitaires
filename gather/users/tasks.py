@@ -21,10 +21,10 @@ def envoyer_email_bienvenue(self, user_id: int) -> None:
     Envoie l'email de bienvenue avec un lien sécurisé de définition de
     mot de passe (jamais le mot de passe en clair), de manière asynchrone.
     """
-    User = get_user_model()
+    user_model = get_user_model()
     try:
-        user = User.objects.get(pk=user_id)
-    except User.DoesNotExist:
+        user = user_model.objects.get(pk=user_id)
+    except user_model.DoesNotExist:
         logger.warning("Utilisateur %s introuvable, email non envoyé.", user_id)
         return
 
@@ -67,5 +67,8 @@ def envoyer_email_bienvenue(self, user_id: int) -> None:
         logger.info("Email de bienvenue envoyé à %s", user.email)
 
     except Exception as exc:
-        logger.exception("Échec d'envoi de l'email à %s, nouvelle tentative...", user.email)
+        logger.exception(
+            "Échec d'envoi de l'email à %s, nouvelle tentative...",
+            user.email,
+        )
         raise self.retry(exc=exc) from exc

@@ -1,11 +1,11 @@
 from django.urls import path
 
+from .views import AdminCreateUserView
 from .views import admin_import_users_view
 from .views import admin_user_list_view
 from .views import user_detail_view
 from .views import user_redirect_view
 from .views import user_update_view
-from .views import AdminCreateUserView
 
 app_name = "users"
 urlpatterns = [
