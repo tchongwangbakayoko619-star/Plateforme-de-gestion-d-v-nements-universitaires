@@ -1,0 +1,139 @@
+source /home/bakayoko2-0/Bureau/my_project/plateforme_universitaire_de_gestion_d_evenements/gather/.venv/bin/activate
+{% load i18n %}
+
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{% translate "Bienvenue sur Gather Université" %}</title>
+  </head>
+  <body style="margin:0;
+               padding:0;
+               background-color:#F3F5F8;
+               font-family:Helvetica, Arial, sans-serif">
+    <table role="presentation"
+           wi
+           dth="100%"
+           cellpadding="0"
+           cellspacing="0"
+           style="background-color:#F3F5F8;
+                  padding:32px 0">
+      <tr>
+        <td align="center">
+          <table role="presentation"
+                 width="600"
+                 cellpadding="0"
+                 cellspacing="0"
+                 style="background-color:#FFFFFF;
+                        border-radius:8px;
+                        overflow:hidden;
+                        box-shadow:0 2px 8px rgba(27,42,74,0.08)">
+            <!-- Header -->
+            <tr>
+              <td style="background-color:#1B2A4A;
+                         padding:32px 40px;
+                         text-align:center">
+                <span style="display:inline-block;
+                             width:48px;
+                             height:3px;
+                             background-color:#C9A227;
+                             margin-bottom:16px"></span>
+                <h1 style="margin:0;
+                           color:#FFFFFF;
+                           font-size:22px;
+                           font-weight:700;
+                           letter-spacing:0.5px">Gather Université</h1>
+                <p style="margin:6px 0 0; color:#B8C2D6; font-size:13px;">
+                  {% translate "Plateforme des événements universitaires" %}
+                </p>
+              </td>
+            </tr>
+            <!-- Corps -->
+            <tr>
+              <td style="padding:40px;">
+                <h2 style="margin:0 0 8px;
+                           color:#1B2A4A;
+                           font-size:20px;
+                           font-weight:700">
+                  {% blocktranslate %}Bienvenue, {{ user_first_name }} !{% endblocktranslate %}
+                </h2>
+                <p style="margin:0 0 24px;
+                          color:#5A5F66;
+                          font-size:15px;
+                          line-height:1.6">
+                  {% translate "Votre compte a été créé avec succès sur EventHub Université. Vous pouvez dès à présent définir votre mot de passe pour accéder à votre espace." %}
+                </p>
+                <!-- Carte info compte -->
+                <table role="presentation"
+                       width="100%"
+                       cellpadding="0"
+                       cellspacing="0"
+                       style="background-color:#F3F5F8;
+                              border-radius:6px;
+                              margin-bottom:28px">
+                  <tr>
+                    <td style="padding:20px 24px;">
+                      <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+                        <tr>
+                          <td style="padding:4px 0; color:#5A5F66; font-size:13px; width:120px;">{% translate "Email" %}</td>
+                          <td style="padding:4px 0; color:#1B2A4A; font-size:14px; font-weight:600">{{ user_email }}</td>
+                        </tr>
+                        <tr>
+                          <td style="padding:4px 0; color:#5A5F66; font-size:13px;">{% translate "Rôle" %}</td>
+                          <td style="padding:4px 0; color:#1B2A4A; font-size:14px; font-weight:600">{{ user_role_display }}</td>
+                        </tr>
+                      </table>
+                    </td>
+                  </tr>
+                </table>
+                <!-- Bouton CTA -->
+                <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+                  <tr>
+                    <td align="center" style="padding-bottom:28px;">
+                      <a href="{{ lien_definition_mdp }}"
+                         style="display:inline-block;
+                                background-color:#1B2A4A;
+                                color:#FFFFFF;
+                                text-decoration:none;
+                                font-size:15px;
+                                font-weight:700;
+                                padding:14px 36px;
+                                border-radius:6px;
+                                border-bottom:3px solid #C9A227">{% translate "Définir mon mot de passe" %}</a>
+                    </td>
+                  </tr>
+                </table>
+                <p style="margin:0 0 8px;
+                          color:#9AA0A8;
+                          font-size:12.5px;
+                          line-height:1.6">
+                  {% translate "Si le bouton ne fonctionne pas, copiez ce lien dans votre navigateur :" %}
+                </p>
+                <p style="margin:0 0 24px; word-break:break-all;">
+                  <a href="{{ lien_definition_mdp }}"
+                     style="color:#2F5C8A;
+                            font-size:12.5px">{{ lien_definition_mdp }}</a>
+                </p>
+                <hr style="border:none; border-top:1px solid #E5E8EC; margin:24px 0;" />
+                <p style="margin:0; color:#9AA0A8; font-size:12.5px; line-height:1.6;">
+                  {% translate "Ce lien expire après un certain délai pour votre sécurité. Si vous n'êtes pas à l'origine de la création de ce compte, ignorez simplement cet email." %}
+                </p>
+              </td>
+            </tr>
+            <!-- Footer -->
+            <tr>
+              <td style="background-color:#F3F5F8;
+                         padding:20px 40px;
+                         text-align:center">
+                <p style="margin:0; color:#9AA0A8; font-size:12px;">
+                  {% translate "EventHub Université" %} · {% translate "Plateforme officielle de gestion des événements" %}
+                </p>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>

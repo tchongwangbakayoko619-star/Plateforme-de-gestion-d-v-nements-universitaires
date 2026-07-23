@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+
+{% load i18n %}
+
+{% block title %}
+  {% translate "Importer des utilisateurs" %}
+{% endblock title %}
+{% block content %}
+  <h1>{% translate "Importer des utilisateurs via CSV" %}</h1>
+  <p>{% translate "Colonnes attendues : email, first_name, last_name, role" %}</p>
+  <form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">{% translate "Importer" %}</button>
+  </form>
+  <p><a href="{% url 'users:admin_list' %}">{% translate "Retour à la liste" %}</a></p>
+{% endblock content %}

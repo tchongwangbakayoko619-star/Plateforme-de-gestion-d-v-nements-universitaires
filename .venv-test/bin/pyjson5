@@ -1,0 +1,8 @@
+#!/home/bakayoko2-0/Bureau/my_project/plateforme_universitaire_de_gestion_d_evenements/gather/.venv-test/bin/python3.12
+import sys
+
+from json5.tool import main
+
+if __name__ == "__main__":
+    sys.argv[0] = sys.argv[0].removesuffix(".exe")
+    sys.exit(main())
