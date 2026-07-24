@@ -17,6 +17,7 @@ from gather.users.mixins import RoleRequiredMixin
 from gather.users.models import User
 from gather.users.services import AdminUserService
 from gather.users.services import UserService
+from gather.users.tasks import importer_utilisateurs_depuis_csv
 
 from .forms import AdminCreateUserForm
 from .forms import AdminImportUsersCSVForm
@@ -109,7 +110,11 @@ admin_user_list_view = AdminUserListView.as_view()
 
 
 class AdminImportUsersView(RoleRequiredMixin, FormView):
-    """Import en masse d'utilisateurs depuis un fichier CSV."""
+    """
+    Import en masse d'utilisateurs depuis un fichier CSV, traité en
+    arrière-plan via Celery pour ne pas bloquer la requête HTTP de l'admin.
+    Un rapport détaillé est envoyé par email une fois l'import terminé.
+    """
 
     template_name = "users/admin_import_users.html"
     form_class = AdminImportUsersCSVForm
@@ -118,27 +123,17 @@ class AdminImportUsersView(RoleRequiredMixin, FormView):
 
     def form_valid(self, form):
         fichier = form.cleaned_data["fichier_csv"]
-        results = AdminUserService.import_from_csv(fichier, self.request.user)
+        csv_content = fichier.read().decode("utf-8")
 
-        nb_crees = len(results["created"])
-        nb_erreurs = len(results["errors"])
+        importer_utilisateurs_depuis_csv.delay(csv_content, self.request.user.id)
 
-        if nb_crees:
-            messages.success(
-                self.request,
-                _("%(n)d utilisateur(s) importé(s) avec succès.") % {"n": nb_crees},
-            )
-        if nb_erreurs:
-            for err in results["errors"]:
-                messages.warning(
-                    self.request,
-                    _("Ligne %(row)s : %(error)s")
-                    % {
-                        "row": err.get("row"),
-                        "error": err.get("error") or err.get("message"),
-                    },
-                )
-
+        messages.success(
+            self.request,
+            _(
+                "Import lancé en arrière-plan. Vous recevrez un rapport "
+                "par email une fois terminé.",
+            ),
+        )
         return redirect(self.success_url)
 
 

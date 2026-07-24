@@ -5,12 +5,10 @@ import logging
 
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
-from django.core.mail import send_mail
 from django.core.validators import validate_email
 from django.db import IntegrityError
 from django.db import transaction
 from django.db.models import Q
-from django.template.loader import render_to_string
 from django.utils.crypto import get_random_string
 
 from gather.organizers.services import OrganizerService
@@ -155,6 +153,8 @@ class AdminUserService:
             role,
         )
 
+        # Email de bienvenue envoyé de manière asynchrone, uniquement si
+        # la transaction complète (User + profil) réussit réellement.
         transaction.on_commit(
             lambda: envoyer_email_bienvenue.delay(user.id),
         )
@@ -162,33 +162,12 @@ class AdminUserService:
         return user
 
     @staticmethod
-    def _send_welcome_email(user) -> None:
-        """
-        Envoie un lien de définition de mot de passe, jamais le mot de passe
-        en clair. Différé après le commit de la transaction (transaction.on_commit)
-        pour ne jamais notifier un compte qui aurait finalement échoué à se créer.
-        """
-        try:
-            context = {"user": user, "login_url": "/accounts/login/"}
-            html_message = render_to_string("emails/welcome.html", context)
-            send_mail(
-                subject="Bienvenue sur EventHub Université",
-                message=(
-                    f"Bonjour {user.get_full_name()},\n\n"
-                    f"Votre compte a été créé.\n"
-                    f"Email : {user.email}\n\n"
-                    f"Définissez votre mot de passe ici : /accounts/password/reset/\n"
-                ),
-                html_message=html_message,
-                from_email="noreply@eventhub-universite.com",
-                recipient_list=[user.email],
-                fail_silently=False,
-            )
-        except Exception:
-            logger.exception("Échec d'envoi de l'email de bienvenue à %s", user.email)
-
-    @staticmethod
     def import_from_csv(csv_file, admin_user) -> dict:
+        """
+        Traite le CSV ligne par ligne de façon synchrone. Appelée soit
+        directement (petits fichiers), soit depuis la tâche Celery
+        importer_utilisateurs_depuis_csv (imports volumineux, en arrière-plan).
+        """
         UserService.check_is_admin(admin_user)
 
         results = {"total": 0, "created": [], "errors": []}

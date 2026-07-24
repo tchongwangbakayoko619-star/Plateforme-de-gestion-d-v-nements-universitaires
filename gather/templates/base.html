@@ -83,6 +83,10 @@
                   <li class="nav-item">
                     {# URL provided by django-allauth/account/urls.py #}
                     <a id="log-in-link" class="nav-link" href="{% url 'account_login' %}">{% translate "Sign In" %}</a>
+                    {% load socialaccount %}
+
+                    <a href="{% provider_login_url 'google' %}">Se connecter avec Google</a>
+                    <a href="{% provider_login_url 'github' %}">Se connecter avec GitHub</a>
                   </li>
                 {% endif %}
               </ul>
