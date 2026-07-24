@@ -1,3 +1,5 @@
+# gather/users/models.py — à ajouter en haut du fichier
+import zoneinfo
 from typing import ClassVar
 
 from django.contrib.auth.models import AbstractUser
@@ -9,6 +11,11 @@ from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
 
 from .managers import UserManager
+
+
+def get_timezone_choices() -> list[tuple[str, str]]:
+    return sorted((tz, tz) for tz in zoneinfo.available_timezones())
+
 
 phone_validator = RegexValidator(
     regex=r"^\+?[0-9\s\-]{8,20}$",
@@ -65,6 +72,7 @@ class User(AbstractUser):
     fuseau_horaire = CharField(
         _("Fuseau horaire"),
         max_length=50,
+        choices=get_timezone_choices,
         default="Africa/Douala",
     )
     updated_at = models.DateTimeField(_("Dernière modification"), auto_now=True)

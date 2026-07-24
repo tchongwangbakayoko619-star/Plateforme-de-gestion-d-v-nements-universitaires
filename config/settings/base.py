@@ -156,6 +156,7 @@ MIDDLEWARE = [
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "gather.users.middleware.TimezoneMiddleware",  # ← ajouté ici
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "allauth.account.middleware.AccountMiddleware",
@@ -253,7 +254,7 @@ EMAIL_USE_TLS = env.bool("EMAIL_USE_TLS", default=True)
 # https://docs.djangoproject.com/en/dev/ref/settings/#default-from-email
 DEFAULT_FROM_EMAIL = env(
     "DJANGO_DEFAULT_FROM_EMAIL",
-    default="EventHub Université <noreply@eventhub-universite.com>",
+    default="Gather Université <noreply@eventhub-universite.com>",
 )
 # ADMIN
 # ------------------------------------------------------------------------------

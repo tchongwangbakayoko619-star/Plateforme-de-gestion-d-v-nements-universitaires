@@ -3,6 +3,7 @@ from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.messages.views import SuccessMessageMixin
 from django.core.exceptions import ValidationError
+from django.db import transaction
 from django.shortcuts import redirect
 from django.urls import reverse
 from django.urls import reverse_lazy
@@ -11,8 +12,11 @@ from django.views.generic import DetailView
 from django.views.generic import FormView
 from django.views.generic import ListView
 from django.views.generic import RedirectView
+from django.views.generic import TemplateView
 from django.views.generic import UpdateView
 
+from gather.organizers.forms import OrganizerProfileForm
+from gather.students.forms import StudentProfileForm
 from gather.users.mixins import RoleRequiredMixin
 from gather.users.models import User
 from gather.users.services import AdminUserService
@@ -21,6 +25,7 @@ from gather.users.tasks import importer_utilisateurs_depuis_csv
 
 from .forms import AdminCreateUserForm
 from .forms import AdminImportUsersCSVForm
+from .forms import UserProfileForm
 
 
 class UserDetailView(LoginRequiredMixin, DetailView):
@@ -46,6 +51,83 @@ class UserUpdateView(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
 
 
 user_update_view = UserUpdateView.as_view()
+
+
+class ProfileUpdateView(LoginRequiredMixin, TemplateView):
+    """
+    Gestion du profil personnel : formulaire User (commun à tous) combiné
+    au formulaire spécifique au rôle (Student ou Organizer). Un ADMIN n'a
+    que le formulaire User, sans profil métier associé.
+    """
+
+    template_name = "users/profile.html"
+
+    def get_profile_form_class(self):
+        if self.request.user.is_etudiant:
+            return StudentProfileForm
+        if self.request.user.is_organisateur:
+            return OrganizerProfileForm
+        return None
+
+    def get_profile_instance(self):
+        if self.request.user.is_etudiant:
+            return getattr(self.request.user, "student_profile", None)
+        if self.request.user.is_organisateur:
+            return getattr(self.request.user, "organizer_profile", None)
+        return None
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        profile_form_class = self.get_profile_form_class()
+
+        context["user_form"] = kwargs.get(
+            "user_form",
+            UserProfileForm(instance=self.request.user),
+        )
+        context["profile_form"] = kwargs.get(
+            "profile_form",
+            profile_form_class(instance=self.get_profile_instance())
+            if profile_form_class
+            else None,
+        )
+        return context
+
+    def post(self, request, *args, **kwargs):
+        user_form = UserProfileForm(
+            request.POST,
+            request.FILES,
+            instance=request.user,
+        )
+
+        profile_form_class = self.get_profile_form_class()
+        profile_form = None
+        if profile_form_class:
+            profile_form = profile_form_class(
+                request.POST,
+                request.FILES,
+                instance=self.get_profile_instance(),
+            )
+
+        forms_valid = user_form.is_valid() and (
+            profile_form is None or profile_form.is_valid()
+        )
+        if not forms_valid:
+            context = self.get_context_data(
+                user_form=user_form,
+                profile_form=profile_form,
+            )
+            return self.render_to_response(context)
+
+        with transaction.atomic():
+            user_form.save()
+            if profile_form:
+                profile_form.save()
+
+        messages.success(request, _("Profil mis à jour avec succès."))
+        return redirect(reverse("users:profile"))
+
+
+profile_update_view = ProfileUpdateView.as_view()
 
 
 class UserRedirectView(LoginRequiredMixin, RedirectView):
