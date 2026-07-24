@@ -5,6 +5,8 @@ from django.contrib.auth import forms as admin_forms
 from django.contrib.auth import get_user_model
 from django.utils.translation import gettext_lazy as _
 
+from gather.organizers.models import Organizer
+
 User = get_user_model()
 
 
@@ -78,7 +80,11 @@ class AdminCreateUserForm(forms.Form):
         max_length=255,
         required=False,
     )
-    poste = forms.ChoiceField(label=_("Poste"), required=False, choices=[("", "---")])
+    poste = forms.ChoiceField(
+        label=_("Poste"),
+        required=False,
+        choices=[("", "---"), *Organizer.Poste.choices],
+    )
     date_debut_mandat = forms.DateField(
         label=_("Date de prise de fonction"),
         required=False,

@@ -1,0 +1,191 @@
+{% load i18n %}
+
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{% translate "Rapport d'import" %}</title>
+  </head>
+  <body style="margin:0;
+               padding:0;
+               background-color:#F3F5F8;
+               font-family:Helvetica, Arial, sans-serif">
+    <table role="presentation"
+           width="100%"
+           cellpadding="0"
+           cellspacing="0"
+           style="background-color:#F3F5F8;
+                  padding:32px 0">
+      <tr>
+        <td align="center">
+          <table role="presentation"
+                 width="600"
+                 cellpadding="0"
+                 cellspacing="0"
+                 style="background-color:#FFFFFF;
+                        border-radius:8px;
+                        overflow:hidden;
+                        box-shadow:0 2px 8px rgba(27,42,74,0.08)">
+            <!-- Header -->
+            <tr>
+              <td style="background-color:#1B2A4A;
+                         padding:32px 40px;
+                         text-align:center">
+                <span style="display:inline-block;
+                             width:48px;
+                             height:3px;
+                             background-color:#C9A227;
+                             margin-bottom:16px"></span>
+                <h1 style="margin:0;
+                           color:#FFFFFF;
+                           font-size:22px;
+                           font-weight:700;
+                           letter-spacing:0.5px">Gather Université</h1>
+                <p style="margin:6px 0 0; color:#B8C2D6; font-size:13px;">{% translate "Rapport d'import d'utilisateurs" %}</p>
+              </td>
+            </tr>
+            <!-- Corps -->
+            <tr>
+              <td style="padding:40px;">
+                <h2 style="margin:0 0 8px;
+                           color:#1B2A4A;
+                           font-size:20px;
+                           font-weight:700">
+                  {% blocktranslate %}Bonjour {{ admin_first_name }},{% endblocktranslate %}
+                </h2>
+                <p style="margin:0 0 28px;
+                          color:#5A5F66;
+                          font-size:15px;
+                          line-height:1.6">
+                  {% translate "Votre import CSV d'utilisateurs vient de se terminer. Voici le résumé de l'opération." %}
+                </p>
+                <!-- Statistiques -->
+                <table role="presentation"
+                       width="100%"
+                       cellpadding="0"
+                       cellspacing="0"
+                       style="margin-bottom:28px">
+                  <tr>
+                    <td width="48%"
+                        style="background-color:#EAF3EE;
+                               border-radius:6px;
+                               padding:20px;
+                               text-align:center">
+                      <p style="margin:0; color:#0F6E56; font-size:32px; font-weight:700;">{{ nb_crees }}</p>
+                      <p style="margin:4px 0 0;
+                                color:#0F6E56;
+                                font-size:13px;
+                                font-weight:600;
+                                text-transform:uppercase;
+                                letter-spacing:0.5px">{% translate "Créés" %}</p>
+                    </td>
+                    <td width="4%"></td>
+                    <td width="48%"
+                        style="background-color:{% if nb_erreurs %}#FBEAE5{% else %}#F3F5F8{% endif %};
+                               border-radius:6px;
+                               padding:20px;
+                               text-align:center">
+                      <p style="margin:0;
+                                color:{% if nb_erreurs %}#993C1D{% else %}#9AA0A8{% endif %};
+                                font-size:32px;
+                                font-weight:700">{{ nb_erreurs }}</p>
+                      <p style="margin:4px 0 0;
+                                color:{% if nb_erreurs %}#993C1D{% else %}#9AA0A8{% endif %};
+                                font-size:13px;
+                                font-weight:600;
+                                text-transform:uppercase;
+                                letter-spacing:0.5px">{% translate "Erreurs" %}</p>
+                    </td>
+                  </tr>
+                </table>
+                {% if utilisateurs_crees %}
+                  <h3 style="margin:0 0 12px;
+                             color:#1B2A4A;
+                             font-size:14px;
+                             font-weight:700;
+                             text-transform:uppercase;
+                             letter-spacing:0.5px">{% translate "Utilisateurs créés" %}</h3>
+                  <table role="presentation"
+                         width="100%"
+                         cellpadding="0"
+                         cellspacing="0"
+                         style="margin-bottom:28px;
+                                border:1px solid #E5E8EC;
+                                border-radius:6px;
+                                overflow:hidden">
+                    {% for u in utilisateurs_crees %}
+                      <tr style="{% if not forloop.first %}border-top:1px solid #E5E8EC;
+                                 {% endif %}">
+                        <td style="padding:10px 16px; color:#5A5F66; font-size:12px; width:40px;">{{ u.row }}</td>
+                        <td style="padding:10px 16px; color:#1B2A4A; font-size:13.5px;">{{ u.email }}</td>
+                      </tr>
+                    {% endfor %}
+                  </table>
+                {% endif %}
+                {% if erreurs %}
+                  <h3 style="margin:0 0 12px;
+                             color:#993C1D;
+                             font-size:14px;
+                             font-weight:700;
+                             text-transform:uppercase;
+                             letter-spacing:0.5px">{% translate "Lignes en erreur" %}</h3>
+                  <table role="presentation"
+                         width="100%"
+                         cellpadding="0"
+                         cellspacing="0"
+                         style="margin-bottom:8px;
+                                border:1px solid #F3D9CE;
+                                border-radius:6px;
+                                overflow:hidden">
+                    {% for e in erreurs %}
+                      <tr style="{% if not forloop.first %}border-top:1px solid #F3D9CE;
+                                 {% endif %} background-color:#FBEAE5">
+                        <td style="padding:10px 16px;
+                                   color:#993C1D;
+                                   font-size:12px;
+                                   width:40px;
+                                   vertical-align:top">{{ e.row }}</td>
+                        <td style="padding:10px 16px; vertical-align:top;">
+                          <p style="margin:0; color:#993C1D; font-size:13.5px; font-weight:600;">{{ e.email|default:"—" }}</p>
+                          <p style="margin:2px 0 0; color:#B85A3E; font-size:12.5px;">{{ e.error }}</p>
+                        </td>
+                      </tr>
+                    {% endfor %}
+                  </table>
+                {% endif %}
+                <hr style="border:none; border-top:1px solid #E5E8EC; margin:28px 0 20px" />
+                <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+                  <tr>
+                    <td align="center">
+                      <a href="{{ lien_liste_utilisateurs }}"
+                         style="display:inline-block;
+                                background-color:#1B2A4A;
+                                color:#FFFFFF;
+                                text-decoration:none;
+                                font-size:14px;
+                                font-weight:700;
+                                padding:12px 32px;
+                                border-radius:6px;
+                                border-bottom:3px solid #C9A227">{% translate "Voir la liste des utilisateurs" %}</a>
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+            <!-- Footer -->
+            <tr>
+              <td style="background-color:#F3F5F8;
+                         padding:20px 40px;
+                         text-align:center">
+                <p style="margin:0; color:#9AA0A8; font-size:12px;">
+                  {% translate "Gather Université" %} &middot; {% translate "Notification automatique — ne pas répondre" %}
+                </p>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>

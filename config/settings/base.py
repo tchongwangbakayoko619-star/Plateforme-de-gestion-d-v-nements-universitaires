@@ -92,6 +92,8 @@ THIRD_PARTY_APPS = [
     "allauth.account",
     "allauth.mfa",
     "allauth.socialaccount",
+    "allauth.socialaccount.providers.google",
+    "allauth.socialaccount.providers.github",
     "django_celery_beat",
 ]
 
@@ -237,7 +239,7 @@ EMAIL_BACKEND = env(
     default="django.core.mail.backends.smtp.EmailBackend",
 )
 # https://docs.djangoproject.com/en/dev/ref/settings/#email-timeout
-EMAIL_TIMEOUT = 5
+EMAIL_TIMEOUT = 30
 # https://docs.djangoproject.com/en/dev/ref/settings/#email-host
 EMAIL_HOST = env("EMAIL_HOST", default="smtp.gmail.com")
 # https://docs.djangoproject.com/en/dev/ref/settings/#email-port
@@ -350,7 +352,28 @@ ACCOUNT_FORMS = {"signup": "gather.users.forms.UserSignupForm"}
 SOCIALACCOUNT_ADAPTER = "gather.users.adapters.SocialAccountAdapter"
 # https://docs.allauth.org/en/latest/socialaccount/configuration.html
 SOCIALACCOUNT_FORMS = {"signup": "gather.users.forms.UserSocialSignupForm"}
+SOCIALACCOUNT_EMAIL_AUTHENTICATION = True
+SOCIALACCOUNT_EMAIL_AUTHENTICATION_AUTO_CONNECT = True
 
-
+# Réseaux sociaux
+# ------------------------------------------------------------------------------
+SOCIALACCOUNT_PROVIDERS = {
+    "google": {
+        "APP": {
+            "client_id": env("GOOGLE_OAUTH2_CLIENT_ID", default=""),
+            "secret": env("GOOGLE_OAUTH2_SECRET", default=""),
+            "key": "",
+        },
+        "SCOPE": ["profile", "email"],
+        "AUTH_PARAMS": {"access_type": "online"},
+    },
+    "github": {
+        "APP": {
+            "client_id": env("GITHUB_OAUTH2_CLIENT_ID", default=""),
+            "secret": env("GITHUB_OAUTH2_SECRET", default=""),
+        },
+        "SCOPE": ["user:email"],
+    },
+}
 # Your stuff...
 # ------------------------------------------------------------------------------
