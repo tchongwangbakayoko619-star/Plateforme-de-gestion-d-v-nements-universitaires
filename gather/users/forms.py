@@ -47,6 +47,21 @@ class UserSocialSignupForm(SignupForm):
     """
 
 
+class UserProfileForm(forms.ModelForm):
+    """Formulaire de mise à jour du profil personnel partagé par tous."""
+
+    class Meta:
+        model = User
+        fields = [
+            "first_name",
+            "last_name",
+            "telephone",
+            "photo",
+            "langue",
+            "fuseau_horaire",
+        ]
+
+
 class AdminCreateUserForm(forms.Form):
     """
     Formulaire de création manuelle d'un utilisateur par un admin.
