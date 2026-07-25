@@ -8,11 +8,15 @@ from django.views import defaults as default_views
 from django.views.generic import TemplateView
 from django.views.generic.base import RedirectView
 
+from gather.payments.views import webhook_campay
+
 urlpatterns = [
     path(
         "inscriptions/",
         include("gather.inscriptions.urls", namespace="inscriptions"),
     ),
+    path("api/campay/webhook/", webhook_campay),
+    path("payments/", include("gather.payments.urls", namespace="payments")),
     path("events/", include("gather.events.urls", namespace="events")),
     path("", RedirectView.as_view(url="/events/"), name="home"),
     path(

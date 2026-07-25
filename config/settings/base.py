@@ -103,6 +103,7 @@ LOCAL_APPS = [
     "gather.organizers.apps.OrganizersConfig",
     "gather.events.apps.EventsConfig",
     "gather.inscriptions.apps.InscriptionsConfig",
+    "gather.payments.apps.PaymentsConfig",
     # Your stuff: custom apps go here
 ]
 # https://docs.djangoproject.com/en/dev/ref/settings/#installed-apps
@@ -258,6 +259,13 @@ DEFAULT_FROM_EMAIL = env(
     "DJANGO_DEFAULT_FROM_EMAIL",
     default="Gather Université <noreply@eventhub-universite.com>",
 )
+
+# CAMPAY
+# ------------------------------------------------------------------------------
+CAMPAY_APP_USERNAME = env("CAMPAY_APP_USERNAME")
+CAMPAY_APP_PASSWORD = env("CAMPAY_APP_PASSWORD")
+CAMPAY_BASE_URL = env("CAMPAY_BASE_URL", default="https://demo.campay.net/api")
+CAMPAY_WEBHOOK_SECRET = env("CAMPAY_WEBHOOK_SECRET", default="")
 # ADMIN
 # ------------------------------------------------------------------------------
 # Django Admin URL.
