@@ -464,7 +464,7 @@ erDiagram
 
 ---
 
-## 🔐 Sécurité
+## 🔐 Sécurité  GOOGLE_OAUTH2_KEY
 
 ### Mesures Implémentées
 
