@@ -15,6 +15,10 @@ urlpatterns = [
         "inscriptions/",
         include("gather.inscriptions.urls", namespace="inscriptions"),
     ),
+    path(
+        "notifications/",
+        include("gather.notifications.urls", namespace="notifications"),
+    ),
     path("api/campay/webhook/", webhook_campay),
     path("payments/", include("gather.payments.urls", namespace="payments")),
     path("events/", include("gather.events.urls", namespace="events")),

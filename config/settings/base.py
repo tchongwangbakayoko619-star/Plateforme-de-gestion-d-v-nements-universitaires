@@ -75,6 +75,7 @@ WSGI_APPLICATION = "config.wsgi.application"
 # APPS
 # ------------------------------------------------------------------------------
 DJANGO_APPS = [
+    "daphne",
     "django.contrib.auth",
     "django.contrib.contenttypes",
     "django.contrib.sessions",
@@ -95,6 +96,7 @@ THIRD_PARTY_APPS = [
     "allauth.socialaccount.providers.google",
     "allauth.socialaccount.providers.github",
     "django_celery_beat",
+    "channels",
 ]
 
 LOCAL_APPS = [
@@ -104,6 +106,7 @@ LOCAL_APPS = [
     "gather.events.apps.EventsConfig",
     "gather.inscriptions.apps.InscriptionsConfig",
     "gather.payments.apps.PaymentsConfig",
+    "gather.notifications.apps.NotificationsConfig",
     # Your stuff: custom apps go here
 ]
 # https://docs.djangoproject.com/en/dev/ref/settings/#installed-apps
@@ -302,6 +305,18 @@ LOGGING = {
 }
 
 REDIS_URL = env("REDIS_URL", default="redis://redis:6379/0")
+# Django Channels — WebSockets
+# ------------------------------------------------------------------------------
+ASGI_APPLICATION = "config.asgi.application"
+
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+            "hosts": [REDIS_URL],
+        },
+    },
+}
 REDIS_SSL = REDIS_URL.startswith("rediss://")
 
 # Celery
