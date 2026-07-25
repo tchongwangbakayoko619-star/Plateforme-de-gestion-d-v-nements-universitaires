@@ -1,4 +1,3 @@
-# gather/events/tests.py
 from django.test import SimpleTestCase
 
 from gather.events import services

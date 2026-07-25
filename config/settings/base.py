@@ -102,6 +102,7 @@ LOCAL_APPS = [
     "gather.students.apps.StudentsConfig",
     "gather.organizers.apps.OrganizersConfig",
     "gather.events.apps.EventsConfig",
+    "gather.inscriptions.apps.InscriptionsConfig",
     # Your stuff: custom apps go here
 ]
 # https://docs.djangoproject.com/en/dev/ref/settings/#installed-apps
