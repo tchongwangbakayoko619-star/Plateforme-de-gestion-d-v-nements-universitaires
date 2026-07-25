@@ -6,9 +6,11 @@ from django.urls import include
 from django.urls import path
 from django.views import defaults as default_views
 from django.views.generic import TemplateView
+from django.views.generic.base import RedirectView
 
 urlpatterns = [
-    path("", TemplateView.as_view(template_name="pages/home.html"), name="home"),
+    path("events/", include("gather.events.urls", namespace="events")),
+    path("", RedirectView.as_view(url="/events/"), name="home"),
     path(
         "about/",
         TemplateView.as_view(template_name="pages/about.html"),

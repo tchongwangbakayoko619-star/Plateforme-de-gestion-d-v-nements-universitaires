@@ -1,0 +1,123 @@
+{% load i18n %}
+
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{% translate "Événement refusé" %}</title>
+  </head>
+  <body style="margin:0;
+               padding:0;
+               background-color:#F3F5F8;
+               font-family:Helvetica, Arial, sans-serif">
+    <table role="presentation"
+           width="100%"
+           cellpadding="0"
+           cellspacing="0"
+           style="background-color:#F3F5F8;
+                  padding:32px 0">
+      <tr>
+        <td align="center">
+          <table role="presentation"
+                 width="600"
+                 cellpadding="0"
+                 cellspacing="0"
+                 style="background-color:#FFFFFF;
+                        border-radius:8px;
+                        overflow:hidden;
+                        box-shadow:0 2px 8px rgba(27,42,74,0.08)">
+            <tr>
+              <td style="background-color:#1B2A4A;
+                         padding:32px 40px;
+                         text-align:center">
+                <span style="display:inline-block;
+                             width:48px;
+                             height:3px;
+                             background-color:#C9A227;
+                             margin-bottom:16px"></span>
+                <h1 style="margin:0; color:#FFFFFF; font-size:22px; font-weight:700;">Gather Université</h1>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:40px;">
+                <div style="display:inline-block;
+                            background-color:#FBEAE5;
+                            color:#993C1D;
+                            font-size:12px;
+                            font-weight:700;
+                            text-transform:uppercase;
+                            letter-spacing:0.5px;
+                            padding:6px 14px;
+                            border-radius:20px;
+                            margin-bottom:16px">{% translate "Événement refusé" %}</div>
+                <h2 style="margin:0 0 8px;
+                           color:#1B2A4A;
+                           font-size:20px;
+                           font-weight:700">
+                  {% blocktranslate with prenom=organisateur_first_name %}Bonjour {{ prenom }},{% endblocktranslate %}
+                </h2>
+                <p style="margin:0 0 24px;
+                          color:#5A5F66;
+                          font-size:15px;
+                          line-height:1.6">
+                  {% blocktranslate with titre=event.titre %}Votre événement « {{ titre }} » n'a pas été approuvé par l'administration.{% endblocktranslate %}
+                </p>
+                <table role="presentation"
+                       width="100%"
+                       cellpadding="0"
+                       cellspacing="0"
+                       style="background-color:#FBEAE5;
+                              border-radius:6px;
+                              margin-bottom:28px">
+                  <tr>
+                    <td style="padding:20px 24px;">
+                      <p style="margin:0 0 4px;
+                                color:#993C1D;
+                                font-size:13px;
+                                font-weight:700;
+                                text-transform:uppercase;
+                                letter-spacing:0.5px">{% translate "Motif" %}</p>
+                      <p style="margin:0; color:#993C1D; font-size:14px; line-height:1.5;">{{ motif|default:"Non précisé" }}</p>
+                    </td>
+                  </tr>
+                </table>
+                <p style="margin:0 0 24px;
+                          color:#5A5F66;
+                          font-size:14px;
+                          line-height:1.6">
+                  {% translate "Vous pouvez consulter les détails, apporter les modifications nécessaires et soumettre à nouveau votre événement." %}
+                </p>
+                <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+                  <tr>
+                    <td align="center">
+                      <a href="{{ lien_event }}"
+                         style="display:inline-block;
+                                background-color:#1B2A4A;
+                                color:#FFFFFF;
+                                text-decoration:none;
+                                font-size:14px;
+                                font-weight:700;
+                                padding:12px 32px;
+                                border-radius:6px;
+                                border-bottom:3px solid #C9A227">{% translate "Consulter mon événement" %}</a>
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+            <tr>
+              <td style="background-color:#F3F5F8;
+                         padding:20px 40px;
+                         text-align:center">
+                <p style="margin:0; color:#9AA0A8; font-size:12px;">
+                  {% translate "Gather Université" %} &middot; {% translate "Notification automatique — ne pas répondre" %}
+                </p>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>
