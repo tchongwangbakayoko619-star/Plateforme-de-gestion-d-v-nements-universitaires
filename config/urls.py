@@ -9,6 +9,10 @@ from django.views.generic import TemplateView
 from django.views.generic.base import RedirectView
 
 urlpatterns = [
+    path(
+        "inscriptions/",
+        include("gather.inscriptions.urls", namespace="inscriptions"),
+    ),
     path("events/", include("gather.events.urls", namespace="events")),
     path("", RedirectView.as_view(url="/events/"), name="home"),
     path(
