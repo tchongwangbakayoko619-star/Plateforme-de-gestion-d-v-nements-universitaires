@@ -1,17 +1,23 @@
-# gather/inscriptions/views.py
+# gather/inscriptions/views.py — version complète avec les vues de check-in et billet
 from __future__ import annotations
 
 import json
 
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import ValidationError
 from django.http import HttpRequest
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
+from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_protect
+from django.views.decorators.csrf import ensure_csrf_cookie
 from django.views.decorators.http import require_http_methods
+from django.views.generic import TemplateView
 
 from gather.events.models import Event
+from gather.users.mixins import RoleRequiredMixin
+from gather.users.models import User
 
 from .models import Inscription
 from .services import InscriptionPermissionError
@@ -143,3 +149,44 @@ def check_in(request: HttpRequest) -> JsonResponse:
         return JsonResponse(resultat, status=200)
     except ValidationError as exc:
         return _erreur_json(exc)
+
+
+@method_decorator(ensure_csrf_cookie, name="dispatch")
+class CheckInPageView(RoleRequiredMixin, TemplateView):
+    """Page de scan caméra pour le check-in à l'entrée d'un événement.
+
+    ensure_csrf_cookie force Django à poser le cookie csrftoken dès le
+    chargement de cette page (elle n'a pas de {% csrf_token %} classique
+    puisque c'est du JS pur qui envoie le fetch), sinon le header
+    X-CSRFToken envoyé par le JS serait vide/invalide.
+    """
+
+    template_name = "inscriptions/checkin.html"
+    allowed_roles = [User.Role.ORGANISATEUR, User.Role.ADMIN]
+
+
+checkin_page_view = CheckInPageView.as_view()
+
+
+class BilletView(LoginRequiredMixin, TemplateView):
+    """Billet imprimable : QR code + infos, avec bouton d'impression."""
+
+    template_name = "inscriptions/billet.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        inscription = get_object_or_404(
+            Inscription.objects.select_related("event", "student__user", "ticket"),
+            pk=self.kwargs["inscription_id"],
+        )
+        student = getattr(self.request.user, "student_profile", None)
+        if student is None or inscription.student_id != student.id:
+            message = "Ce billet ne vous appartient pas."
+            raise ValidationError(message)
+
+        context["inscription"] = inscription
+        context["ticket"] = getattr(inscription, "ticket", None)
+        return context
+
+
+billet_view = BilletView.as_view()

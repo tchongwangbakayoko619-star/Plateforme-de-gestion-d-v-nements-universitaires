@@ -1,0 +1,61 @@
+{# gather/templates/dashboard/admin_dashboard.html #}
+{% extends "base.html" %}
+
+{% load i18n %}
+
+{% block title %}
+  {% translate "Tableau de bord — Administration" %}
+{% endblock title %}
+{% block content %}
+  <div class="container py-4">
+    <h1 class="h4 mb-4">{% translate "Tableau de bord administrateur" %}</h1>
+    <div class="row g-3 mb-4">
+      <div class="col-md-3">
+        <div class="card text-center p-3">
+          <div class="h3 mb-0">{{ en_attente_validation }}</div>
+          <div class="text-muted small">{% translate "En attente de validation" %}</div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="card text-center p-3">
+          <div class="h3 mb-0">{{ evenements_publies }}</div>
+          <div class="text-muted small">{% translate "Événements publiés" %}</div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="card text-center p-3">
+          <div class="h3 mb-0">{{ total_inscriptions }}</div>
+          <div class="text-muted small">{% translate "Inscriptions confirmées" %}</div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="card text-center p-3">
+          <div class="h3 mb-0">{{ revenus_total }} XAF</div>
+          <div class="text-muted small">{% translate "Revenus totaux" %}</div>
+        </div>
+      </div>
+    </div>
+    <h2 class="h5 mb-3">{% translate "Événements récents" %}</h2>
+    <table class="table table-sm">
+      <thead>
+        <tr>
+          <th>{% translate "Titre" %}</th>
+          <th>{% translate "Organisateur" %}</th>
+          <th>{% translate "Statut" %}</th>
+          <th>{% translate "Date" %}</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for event in evenements_recents %}
+          <tr>
+            <td><a href="{% url 'events:detail' event_id=event.id %}">{{ event.titre }}</a></td>
+            <td>{{ event.organizer.user.email }}</td>
+            <td>{{ event.get_statut_display }}</td>
+            <td>{{ event.date_debut|date:"d/m/Y H:i" }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    <a href="{% url 'events:admin_list' %}" class="btn btn-primary">{% translate "Voir la file de modération" %}</a>
+  </div>
+{% endblock content %}

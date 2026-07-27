@@ -105,7 +105,7 @@ organizer_event_list_view = OrganizerEventListView.as_view()
 
 
 class EventCreateView(RoleRequiredMixin, FormView):
-    """Création d'un brouillon d'événement par un organisateur."""
+    """Création d'un événement par un organisateur."""
 
     template_name = "events/event_form.html"
     form_class = EventForm
@@ -114,7 +114,13 @@ class EventCreateView(RoleRequiredMixin, FormView):
     def form_valid(self, form):
         organizer = self.request.user.organizer_profile
         event = EventService.creer_brouillon(organizer, form.cleaned_data)
-        messages.success(self.request, _("Brouillon d'événement créé."))
+        if event.statut == Event.Statut.PENDING:
+            messages.success(
+                self.request,
+                _("Événement créé et envoyé pour validation."),
+            )
+        else:
+            messages.success(self.request, _("Brouillon d'événement créé."))
         self.object = event
         return redirect(self.get_success_url())
 

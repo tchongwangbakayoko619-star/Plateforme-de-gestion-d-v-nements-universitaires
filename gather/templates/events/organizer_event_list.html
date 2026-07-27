@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% load i18n %}
+
+{% block title %}
+  {% translate "Mes événements" %}
+{% endblock title %}
+{% block content %}
+  <h1>{% translate "Mes événements" %}</h1>
+  <p><a href="{% url 'events:organizer_create' %}">{% translate "Créer un événement" %}</a></p>
+  <table>
+    <thead>
+      <tr>
+        <th>{% translate "Titre" %}</th>
+        <th>{% translate "Statut" %}</th>
+        <th>{% translate "Date" %}</th>
+        <th>{% translate "Places" %}</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for event in evenements %}
+        <tr>
+          <td><a href="{% url 'events:organizer_detail' event.id %}">{{ event.titre }}</a></td>
+          <td>{{ event.get_statut_display }}</td>
+          <td>{{ event.date_debut }}</td>
+          <td>
+            {% if event.statut == "draft" or event.statut == "revision_requested" %}
+              <a href="{% url 'events:organizer_update' event.id %}">{% translate "Modifier" %}</a>
+              <form method="post"
+                    action="{% url 'events:soumettre' event.id %}"
+                    style="display:inline">
+                {% csrf_token %}
+                <button type="submit">{% translate "Soumettre" %}</button>
+              </form>
+            {% endif %}
+          </td>
+          <td>{{ event.places_restantes }} / {{ event.capacite_max }}</td>
+          <td>
+            {% if event.statut == "draft" or event.statut == "revision_requested" %}
+              <a href="{% url 'events:organizer_update' event.id %}">{% translate "Modifier" %}</a>
+            {% endif %}
+          </td>
+        </tr>
+      {% empty %}
+        <tr>
+          <td colspan="5">{% translate "Aucun événement." %}</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% endblock content %}

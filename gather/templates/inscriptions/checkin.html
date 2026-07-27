@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+
+{% load i18n %}
+
+{% block title %}
+  {% translate "Check-in" %}
+{% endblock title %}
+{% block content %}
+  <div class="container py-4">
+    <h1 class="h4 mb-4">{% translate "Scanner un billet" %}</h1>
+    <div id="reader" style="width: 100%; max-width: 400px;"></div>
+    <div id="resultat" class="mt-4"></div>
+    <button id="btn-relancer" class="btn btn-secondary mt-3 d-none">{% translate "Scanner un autre billet" %}</button>
+  </div>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js"></script>
+  <script>
+    const resultatDiv = document.getElementById("resultat");
+    const btnRelancer = document.getElementById("btn-relancer");
+    let scannerActif = true;
+
+    function getCookie(name) {
+      const value = `; ${document.cookie}`;
+      const parts = value.split(`; ${name}=`);
+      if (parts.length === 2) return parts.pop().split(";").shift();
+    }
+
+    const html5QrCode = new Html5Qrcode("reader");
+
+    function demarrerScan() {
+      scannerActif = true;
+      resultatDiv.innerHTML = "";
+      btnRelancer.classList.add("d-none");
+      html5QrCode.start({
+          facingMode: "environment"
+        }, {
+          fps: 10,
+          qrbox: 250
+        },
+        (codeQr) => {
+          if (!scannerActif) return;
+          scannerActif = false;
+          html5QrCode.pause(true);
+          validerBillet(codeQr);
+        },
+      );
+    }
+
+    async function validerBillet(codeQr) {
+      try {
+        const reponse = await fetch("{% url 'inscriptions:check_in' %}", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-CSRFToken": getCookie("csrftoken"),
+            "ngrok-skip-browser-warning": "true",
+          },
+          body: JSON.stringify({
+            code_qr: codeQr
+          }),
+        });
+        const data = await reponse.json();
+
+        resultatDiv.innerHTML = reponse.ok ?
+          `<div class="alert alert-success">
+             <strong>{% translate "Billet validé" %}</strong><br />
+             {% translate "Participant" %} : ${data.participant}<br />
+             {% translate "Événement" %} : ${data.evenement}<br />
+             {% translate "Heure" %} : ${data.heure}
+           </div>` :
+          `<div class="alert alert-danger">
+             <strong>{% translate "Erreur" %}</strong><br />${data.erreur}
+           </div>`;
+      } catch (e) {
+        resultatDiv.innerHTML = `<div class="alert alert-danger">{% translate "Erreur" %} : ${e.message}</div>`;
+      }
+      btnRelancer.classList.remove("d-none");
+    }
+
+    btnRelancer.addEventListener("click", () => {
+      html5QrCode.resume();
+      demarrerScan();
+    });
+
+    demarrerScan();
+  </script>
+{% endblock content %}

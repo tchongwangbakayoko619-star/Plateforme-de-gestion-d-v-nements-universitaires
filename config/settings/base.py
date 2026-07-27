@@ -107,6 +107,8 @@ LOCAL_APPS = [
     "gather.inscriptions.apps.InscriptionsConfig",
     "gather.payments.apps.PaymentsConfig",
     "gather.notifications.apps.NotificationsConfig",
+    "gather.dashboard.apps.DashboardConfig",
+    "gather.statistic.apps.StatisticsConfig",
     # Your stuff: custom apps go here
 ]
 # https://docs.djangoproject.com/en/dev/ref/settings/#installed-apps
@@ -166,6 +168,7 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "allauth.account.middleware.AccountMiddleware",
+    "gather.contrib.middleware.ExceptionCentraliseeMiddleware",
 ]
 
 # STATIC

@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+
+{% load i18n %}
+
+{% block title %}
+  {% translate "Votre avis" %}
+{% endblock title %}
+{% block content %}
+  <h1>{% translate "Votre avis" %}</h1>
+  {% if form.non_field_errors %}
+    <div class="alert alert-danger">{{ form.non_field_errors }}</div>
+  {% endif %}
+  <form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">{% translate "Envoyer" %}</button>
+  </form>
+{% endblock content %}

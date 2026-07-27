@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+
+{% load i18n %}
+
+{% block title %}
+  {% translate "Modération des événements" %}
+{% endblock title %}
+{% block content %}
+  <h1>{% translate "Modération des événements" %}</h1>
+  <form method="get" class="mb-4">
+    <div class="row g-2 align-items-end">
+      <div class="col-auto">
+        <label for="statut" class="form-label">{% translate "Statut" %}</label>
+        <select id="statut" name="statut" class="form-select">
+          <option value="pending"
+                  {% if request.GET.statut == "pending" or not request.GET.statut %}selected{% endif %}>
+            {% translate "En attente de validation" %}
+          </option>
+          <option value="revision_requested"
+                  {% if request.GET.statut == "revision_requested" %}selected{% endif %}>
+            {% translate "Révision demandée" %}
+          </option>
+          <option value="rejected"
+                  {% if request.GET.statut == "rejected" %}selected{% endif %}>{% translate "Refusé" %}</option>
+          <option value="published"
+                  {% if request.GET.statut == "published" %}selected{% endif %}>{% translate "Publié" %}</option>
+          <option value="cancelled"
+                  {% if request.GET.statut == "cancelled" %}selected{% endif %}>{% translate "Annulé" %}</option>
+        </select>
+      </div>
+      <div class="col-auto">
+        <button type="submit" class="btn btn-primary">{% translate "Filtrer" %}</button>
+      </div>
+    </div>
+  </form>
+  <table class="table table-bordered">
+    <thead>
+      <tr>
+        <th>{% translate "Titre" %}</th>
+        <th>{% translate "Organisateur" %}</th>
+        <th>{% translate "Statut" %}</th>
+        <th>{% translate "Date" %}</th>
+        <th>{% translate "Actions" %}</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for event in evenements %}
+        <tr>
+          <td>{{ event.titre }}</td>
+          <td>{{ event.organizer.user.email }}</td>
+          <td>{{ event.get_statut_display }}</td>
+          <td>{{ event.date_debut }}</td>
+          <td>
+            {% if event.statut == "pending" %}
+              <form method="post"
+                    action="{% url 'events:approuver' event.id %}"
+                    style="display:inline">
+                {% csrf_token %}
+                <button type="submit">{% translate "Approuver" %}</button>
+              </form>
+              <a href="{% url 'events:refuser' event.id %}">{% translate "Refuser" %}</a>
+              <a href="{% url 'events:demander_revision' event.id %}">{% translate "Demander révision" %}</a>
+            {% endif %}
+          </td>
+        </tr>
+      {% empty %}
+        <tr>
+          <td colspan="5">{% translate "Aucun événement à modérer." %}</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% endblock content %}

@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+
+{% load i18n %}
+
+{% block title %}{{ event.titre }}{% endblock title %}
+{% block content %}
+  <h1>{{ event.titre }}</h1>
+  <p>{{ event.description }}</p>
+  <table>
+    <tr><th>{% translate "Lieu" %}</th><td>{{ event.lieu }}</td></tr>
+    <tr><th>{% translate "Date de début" %}</th><td>{{ event.date_debut }}</td></tr>
+    <tr><th>{% translate "Date de fin" %}</th><td>{{ event.date_fin }}</td></tr>
+    <tr><th>{% translate "Catégorie" %}</th><td>{{ event.get_categorie_display }}</td></tr>
+    <tr><th>{% translate "Places restantes" %}</th><td>{{ event.places_restantes }} / {{ event.capacite_max }}</td></tr>
+    <tr><th>{% translate "Organisateur" %}</th><td>{{ event.organizer.club }}</td></tr>
+    <tr>
+      <th>{% translate "Paiement" %}</th>
+      <td>
+        {% if event.type_paiement == "gratuit" %}
+          {% translate "Gratuit" %}
+        {% else %}
+          {{ event.prix }} {{ event.devise }}
+        {% endif %}
+      </td>
+    </tr>
+  </table>
+  <h2>{% translate "Avis" %}</h2>
+  {% if stats.moyenne %}
+    <p>⭐ {{ stats.moyenne|floatformat:1 }} / 5 ({{ stats.nombre_avis }} {% translate "avis" %})</p>
+  {% else %}
+    <p>{% translate "Aucun avis pour le moment." %}</p>
+  {% endif %}
+  {% if mon_avis %}
+    <p>{% translate "Votre avis" %} : {{ mon_avis.note }}/5 — {{ mon_avis.commentaire }}</p>
+    <a href="{% url 'events:review_update' mon_avis.id %}">{% translate "Modifier mon avis" %}</a>
+    |
+    <a href="{% url 'events:review_delete' mon_avis.id %}">{% translate "Supprimer mon avis" %}</a>
+  {% elif event.est_termine and user.is_authenticated and user.is_etudiant %}
+    <a href="{% url 'events:review_create' event.id %}">{% translate "Laisser un avis" %}</a>
+  {% endif %}
+  <ul>
+    {% for avis in avis %}
+      <li>{{ avis.student.user.get_full_name }} — {{ avis.note }}/5 : {{ avis.commentaire }}</li>
+    {% endfor %}
+  </ul>
+{% endblock content %}

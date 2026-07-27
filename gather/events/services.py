@@ -83,7 +83,7 @@ class EventService:
             type_paiement=data.get("type_paiement", Event.TypePaiement.GRATUIT),
             prix=data.get("prix"),
             devise=data.get("devise", "XAF"),
-            statut=Event.Statut.DRAFT,
+            statut=data.get("statut", Event.Statut.DRAFT),
         )
 
     @staticmethod

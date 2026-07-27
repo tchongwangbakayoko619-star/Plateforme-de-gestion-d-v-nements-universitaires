@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% load i18n %}
+
+{% block title %}
+  {% translate "Supprimer l'événement" %}
+{% endblock title %}
+{% block content %}
+  <h1>{% translate "Supprimer l'événement" %}</h1>
+  <p>{% blocktranslate with titre=object.titre %}Êtes-vous sûr de vouloir supprimer « {{ titre }} » ?{% endblocktranslate %}</p>
+  <form method="post">
+    {% csrf_token %}
+    <button type="submit">{% translate "Confirmer la suppression" %}</button>
+  </form>
+  <p><a href="{% url 'events:organizer_detail' object.id %}">{% translate "Annuler" %}</a></p>
+{% endblock content %}

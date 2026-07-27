@@ -70,3 +70,22 @@ def test_notification_creee_a_l_inscription():
         destinataire=student.user,
         type=Notification.Type.INSCRIPTION_CONFIRMEE,
     ).exists()
+
+
+def test_notification_admin_approuve_evenement():
+    from gather.events.models import Event  # noqa: PLC0415
+    from gather.events.services import EventService  # noqa: PLC0415
+    from gather.events.tests.factories import creer_admin_user  # noqa: PLC0415
+    from gather.events.tests.factories import creer_event  # noqa: PLC0415
+    from gather.events.tests.factories import creer_organizer  # noqa: PLC0415
+
+    organizer = creer_organizer()
+    admin_user = creer_admin_user()
+    event = creer_event(organizer, statut=Event.Statut.PENDING)
+
+    EventService.approuver(event, admin_user)
+
+    assert Notification.objects.filter(
+        destinataire=organizer.user,
+        type=Notification.Type.EVENT_PUBLIE,
+    ).exists()

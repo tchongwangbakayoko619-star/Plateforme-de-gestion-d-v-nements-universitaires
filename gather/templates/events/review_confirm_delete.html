@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+
+{% load i18n %}
+
+{% block title %}
+  {% translate "Supprimer l'avis" %}
+{% endblock title %}
+{% block content %}
+  <h1>{% translate "Supprimer votre avis" %}</h1>
+  <p>{% translate "Êtes-vous sûr de vouloir supprimer votre avis ?" %}</p>
+  <form method="post">
+    {% csrf_token %}
+    <button type="submit">{% translate "Confirmer la suppression" %}</button>
+  </form>
+{% endblock content %}

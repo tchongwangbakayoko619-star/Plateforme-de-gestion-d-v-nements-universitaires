@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% load i18n %}
+
+{% block title %}
+  {% translate "Refuser l'événement" %}
+{% endblock title %}
+{% block content %}
+  <h1>{% translate "Refuser l'événement" %}</h1>
+  <form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">{% translate "Confirmer le refus" %}</button>
+  </form>
+  <p><a href="{% url 'events:admin_list' %}">{% translate "Annuler" %}</a></p>
+{% endblock content %}

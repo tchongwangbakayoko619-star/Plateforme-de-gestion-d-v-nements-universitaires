@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+
+{% load i18n %}
+
+{% block title %}
+  {% translate "Événement" %}
+{% endblock title %}
+{% block content %}
+  <h1>
+    {% if object %}
+      {% translate "Modifier l'événement" %}
+    {% else %}
+      {% translate "Créer un événement" %}
+    {% endif %}
+  </h1>
+  {% if form.non_field_errors %}
+    <div class="alert alert-danger">{{ form.non_field_errors }}</div>
+  {% endif %}
+  <form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">{% translate "Enregistrer" %}</button>
+  </form>
+  <p><a href="{% url 'events:organizer_list' %}">{% translate "Retour à mes événements" %}</a></p>
+{% endblock content %}

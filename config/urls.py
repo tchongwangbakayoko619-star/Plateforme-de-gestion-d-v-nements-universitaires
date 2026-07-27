@@ -11,6 +11,8 @@ from django.views.generic.base import RedirectView
 from gather.payments.views import webhook_campay
 
 urlpatterns = [
+    path("statistics/", include("gather.statistic.urls", namespace="statistic")),
+    path("dashboard/", include("gather.dashboard.urls", namespace="dashboard")),
     path(
         "inscriptions/",
         include("gather.inscriptions.urls", namespace="inscriptions"),

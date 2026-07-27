@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% load i18n %}
+
+{% block title %}
+  {% translate "Événements" %}
+{% endblock title %}
+{% block content %}
+  <h1>{% translate "Événements à venir" %}</h1>
+  <form method="get">
+    <input type="text"
+           name="search"
+           placeholder="{% translate 'Rechercher...' %}"
+           value="{{ request.GET.search }}" />
+    <button type="submit">{% translate "Rechercher" %}</button>
+  </form>
+  <div>
+    {% for event in evenements %}
+      <div>
+        <h3><a href="{% url 'events:detail' event.id %}">{{ event.titre }}</a></h3>
+        <p>{{ event.lieu }} — {{ event.date_debut }}</p>
+        <p>{% if event.type_paiement == "gratuit" %}{% translate "Gratuit" %}{% else %}{{ event.prix }} {{ event.devise }}{% endif %}</p>
+      </div>
+    {% empty %}
+      <p>{% translate "Aucun événement publié pour le moment." %}</p>
+    {% endfor %}
+  </div>
+  {% if is_paginated %}
+    <div>
+      {% if page_obj.has_previous %}
+        <a href="?page={{ page_obj.previous_page_number }}">{% translate "Précédent" %}</a>
+      {% endif %}
+      <span>{{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span>
+      {% if page_obj.has_next %}
+        <a href="?page={{ page_obj.next_page_number }}">{% translate "Suivant" %}</a>
+      {% endif %}
+    </div>
+  {% endif %}
+{% endblock content %}

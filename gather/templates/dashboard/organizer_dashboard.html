@@ -1,0 +1,62 @@
+{# gather/templates/dashboard/organizer_dashboard.html #}
+{% extends "base.html" %}
+
+{% load i18n %}
+
+{% block title %}
+  {% translate "Tableau de bord — Organisateur" %}
+{% endblock title %}
+{% block content %}
+  <div class="container py-4">
+    <h1 class="h4 mb-4">{% translate "Mes événements" %}</h1>
+    <div class="row g-3 mb-4">
+      <div class="col-md-3">
+        <div class="card text-center p-3">
+          <div class="h3 mb-0">{{ total_evenements }}</div>
+          <div class="text-muted small">{% translate "Total" %}</div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="card text-center p-3">
+          <div class="h3 mb-0">{{ en_attente }}</div>
+          <div class="text-muted small">{% translate "En attente" %}</div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="card text-center p-3">
+          <div class="h3 mb-0">{{ publies }}</div>
+          <div class="text-muted small">{% translate "Publiés" %}</div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="card text-center p-3">
+          <div class="h3 mb-0">{{ total_inscrits }}</div>
+          <div class="text-muted small">{% translate "Inscrits (tous événements)" %}</div>
+        </div>
+      </div>
+    </div>
+    <table class="table table-sm">
+      <thead>
+        <tr>
+          <th>{% translate "Titre" %}</th>
+          <th>{% translate "Statut" %}</th>
+          <th>{% translate "Places" %}</th>
+          <th>{% translate "Date" %}</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for event in mes_evenements %}
+          <tr>
+            <td><a href="{% url 'events:organizer_detail' event_id=event.id %}">{{ event.titre }}</a></td>
+            <td>{{ event.get_statut_display }}</td>
+            <td>{{ event.places_restantes }}/{{ event.capacite_max }}</td>
+            <td>{{ event.date_debut|date:"d/m/Y H:i" }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    <a href="{% url 'events:organizer_create' %}" class="btn btn-primary">{% translate "Créer un événement" %}</a>
+    <a href="{% url 'inscriptions:checkin_page' %}"
+       class="btn btn-outline-secondary">{% translate "Scanner les billets (check-in)" %}</a>
+  </div>
+{% endblock content %}

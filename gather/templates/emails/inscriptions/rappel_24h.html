@@ -1,0 +1,74 @@
+{% load i18n %}
+
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{% translate "Rappel événement" %}</title>
+  </head>
+  <body style="margin:0;
+               padding:0;
+               background-color:#F3F5F8;
+               font-family:Helvetica, Arial, sans-serif">
+    <table role="presentation"
+           width="100%"
+           cellpadding="0"
+           cellspacing="0"
+           style="background-color:#F3F5F8;
+                  padding:32px 0">
+      <tr>
+        <td align="center">
+          <table role="presentation"
+                 width="600"
+                 cellpadding="0"
+                 cellspacing="0"
+                 style="background-color:#FFFFFF;
+                        border-radius:8px;
+                        overflow:hidden;
+                        box-shadow:0 2px 8px rgba(27,42,74,0.08)">
+            <tr>
+              <td style="background-color:#1B2A4A;
+                         padding:32px 40px;
+                         text-align:center">
+                <h1 style="margin:0; color:#FFFFFF; font-size:22px; font-weight:700;">Gather Université</h1>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:40px;">
+                <h2 style="margin:0 0 8px;
+                           color:#1B2A4A;
+                           font-size:20px;
+                           font-weight:700">
+                  {% blocktranslate with prenom=student_first_name %}Bonjour {{ prenom }},{% endblocktranslate %}
+                </h2>
+                <p style="margin:0 0 24px;
+                          color:#5A5F66;
+                          font-size:15px;
+                          line-height:1.6">
+                  {% blocktranslate with titre=event.titre date=event.date_debut %}Rappel : « {{ titre }} » a lieu demain, le {{ date }}.{% endblocktranslate %}
+                </p>
+                <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+                  <tr>
+                    <td align="center">
+                      <a href="{{ lien_event }}"
+                         style="display:inline-block;
+                                background-color:#1B2A4A;
+                                color:#FFFFFF;
+                                text-decoration:none;
+                                font-size:14px;
+                                font-weight:700;
+                                padding:12px 32px;
+                                border-radius:6px;
+                                border-bottom:3px solid #C9A227">{% translate "Voir l'événement" %}</a>
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>

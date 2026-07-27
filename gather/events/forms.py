@@ -19,6 +19,7 @@ class EventForm(forms.ModelForm):
             "titre",
             "description",
             "categorie",
+            "statut",
             "image",
             "lieu",
             "latitude",
@@ -35,6 +36,15 @@ class EventForm(forms.ModelForm):
             "date_fin": forms.DateTimeInput(attrs={"type": "datetime-local"}),
             "description": forms.Textarea(attrs={"rows": 5}),
         }
+
+    statut = forms.ChoiceField(
+        choices=[
+            (Event.Statut.DRAFT, Event.Statut.DRAFT.label),
+            (Event.Statut.PENDING, Event.Statut.PENDING.label),
+        ],
+        label=_("Statut"),
+        initial=Event.Statut.DRAFT,
+    )
 
     def clean(self):
         cleaned_data = super().clean()

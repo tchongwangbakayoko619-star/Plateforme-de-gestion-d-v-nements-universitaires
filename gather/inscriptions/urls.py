@@ -1,4 +1,3 @@
-# gather/inscriptions/urls.py
 from django.urls import path
 
 from . import views
@@ -19,4 +18,10 @@ urlpatterns = [
         name="inscrits_evenement",
     ),
     path("check-in/", views.check_in, name="check_in"),
+    path("checkin/", views.checkin_page_view, name="checkin_page"),
+    path(
+        "<uuid:inscription_id>/billet/",
+        views.billet_view,
+        name="billet",
+    ),
 ]
