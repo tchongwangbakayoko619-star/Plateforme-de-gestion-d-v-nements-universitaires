@@ -3,12 +3,14 @@ from __future__ import annotations
 
 import json
 
+from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import ValidationError
 from django.http import HttpRequest
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
+from django.shortcuts import redirect
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_protect
 from django.views.decorators.csrf import ensure_csrf_cookie
@@ -59,39 +61,93 @@ def _inscription_vers_dict(inscription: Inscription) -> dict:
 @login_required
 @csrf_protect
 @require_http_methods(["POST"])
-def s_inscrire(request: HttpRequest, event_id: str) -> JsonResponse:
+def s_inscrire(request: HttpRequest, event_id: str):
+    """Gère à la fois les soumissions de formulaire HTML classique
+    (redirection avec message) et les appels API attendant du JSON
+    (header Accept: application/json)."""
+    veut_json = "application/json" in request.headers.get("Accept", "")
+
     student = getattr(request.user, "student_profile", None)
     if student is None:
-        return JsonResponse(
-            {"succes": False, "erreur": "Profil étudiant requis."},
-            status=403,
-        )
+        if veut_json:
+            return JsonResponse(
+                {"succes": False, "erreur": "Profil étudiant requis."},
+                status=403,
+            )
+        messages.error(request, "Seuls les comptes étudiants peuvent s'inscrire.")
+        return redirect("events:detail", event_id=event_id)
+
     event = get_object_or_404(Event, pk=event_id)
     try:
         inscription = InscriptionService.s_inscrire(student, event)
-        return JsonResponse(_inscription_vers_dict(inscription), status=201)
     except ValidationError as exc:
-        return _erreur_json(exc)
+        if veut_json:
+            return _erreur_json(exc)
+        message = exc.message if hasattr(exc, "message") else str(exc)
+        messages.error(request, message)
+        return redirect("events:detail", event_id=event_id)
+
+    if veut_json:
+        return JsonResponse(_inscription_vers_dict(inscription), status=201)
+
+    if inscription.necessite_paiement:
+        messages.info(
+            request,
+            "Inscription enregistrée ! Veuillez procéder au paiement "
+            "pour confirmer votre place.",
+        )
+    else:
+        messages.success(
+            request,
+            "Inscription confirmée ! Votre billet est disponible.",
+        )
+    return redirect("events:detail", event_id=event_id)
 
 
 @login_required
 @csrf_protect
 @require_http_methods(["POST"])
-def annuler_inscription(request: HttpRequest, inscription_id: str) -> JsonResponse:
+def annuler_inscription(request: HttpRequest, inscription_id: str):
+    veut_json = "application/json" in request.headers.get("Accept", "")
     student = getattr(request.user, "student_profile", None)
+
     if student is None:
-        return JsonResponse(
-            {"succes": False, "erreur": "Profil étudiant requis."},
-            status=403,
+        if veut_json:
+            return JsonResponse(
+                {"succes": False, "erreur": "Profil étudiant requis."},
+                status=403,
+            )
+        messages.error(
+            request,
+            "Seuls les comptes étudiants peuvent annuler une inscription.",
         )
+        return redirect("events:list")
+
     inscription = get_object_or_404(Inscription, pk=inscription_id)
+    response = None
     try:
         inscription = InscriptionService.annuler_inscription(inscription, student)
-        return JsonResponse(_inscription_vers_dict(inscription), status=200)
+        if veut_json:
+            response = JsonResponse(_inscription_vers_dict(inscription), status=200)
+        else:
+            messages.success(request, "Inscription annulée.")
+            response = redirect("events:list")
     except InscriptionPermissionError as exc:
-        return _erreur_json(exc, statut=403)
+        if veut_json:
+            response = _erreur_json(exc, statut=403)
+        else:
+            messages.error(request, str(exc))
+            response = redirect("events:list")
     except ValidationError as exc:
-        return _erreur_json(exc)
+        if veut_json:
+            response = _erreur_json(exc)
+        else:
+            message = exc.message if hasattr(exc, "message") else str(exc)
+            messages.error(request, message)
+            response = redirect("events:list")
+
+    assert response is not None
+    return response
 
 
 @login_required

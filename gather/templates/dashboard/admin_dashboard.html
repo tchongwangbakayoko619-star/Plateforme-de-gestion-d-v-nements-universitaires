@@ -7,55 +7,71 @@
   {% translate "Tableau de bord — Administration" %}
 {% endblock title %}
 {% block content %}
-  <div class="container py-4">
-    <h1 class="h4 mb-4">{% translate "Tableau de bord administrateur" %}</h1>
-    <div class="row g-3 mb-4">
-      <div class="col-md-3">
-        <div class="card text-center p-3">
-          <div class="h3 mb-0">{{ en_attente_validation }}</div>
-          <div class="text-muted small">{% translate "En attente de validation" %}</div>
-        </div>
-      </div>
-      <div class="col-md-3">
-        <div class="card text-center p-3">
-          <div class="h3 mb-0">{{ evenements_publies }}</div>
-          <div class="text-muted small">{% translate "Événements publiés" %}</div>
-        </div>
-      </div>
-      <div class="col-md-3">
-        <div class="card text-center p-3">
-          <div class="h3 mb-0">{{ total_inscriptions }}</div>
-          <div class="text-muted small">{% translate "Inscriptions confirmées" %}</div>
-        </div>
-      </div>
-      <div class="col-md-3">
-        <div class="card text-center p-3">
-          <div class="h3 mb-0">{{ revenus_total }} XAF</div>
-          <div class="text-muted small">{% translate "Revenus totaux" %}</div>
-        </div>
-      </div>
+  <div class="flex flex-wrap items-center justify-between gap-3 mb-6">
+    <h1 class="font-display text-2xl text-primary-600">{% translate "Vue d'ensemble" %}</h1>
+    <div class="flex items-center gap-3">
+      {% include "components/badge_seal.html" with label=notifications_non_lues|stringformat:"s"|add:" notifications" tone="gold" %}
+      {% include "components/button.html" with label="Ajouter un utilisateur" href_name="users:admin_create" variant="primary" %}
     </div>
-    <h2 class="h5 mb-3">{% translate "Événements récents" %}</h2>
-    <table class="table table-sm">
-      <thead>
+  </div>
+  <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-8">
+    {% include "components/stat_card.html" with value=en_attente_validation label="En attente de validation" %}
+    {% include "components/stat_card.html" with value=evenements_publies label="Événements publiés" %}
+    {% include "components/stat_card.html" with value=total_inscriptions label="Inscriptions confirmées" %}
+    {% include "components/stat_card.html" with value=revenus_total label="Revenus (XAF)" %}
+  </div>
+  {% if en_attente_validation > 0 %}
+    <div class="bg-info-50 border-l-4 border-info-500 rounded-card px-5 py-4 mb-8 flex items-center justify-between">
+      <div>
+        <p class="font-medium text-info-500">
+          {% blocktranslate count counter=en_attente_validation %}
+        {{ counter }} événement attend votre validation
+      {% plural %}
+        {{ counter }} événements attendent votre validation
+      {% endblocktranslate %}
+        </p>
+        <p class="text-sm text-ink-muted mt-0.5">{% translate "Les organisateurs sont en attente de votre décision." %}</p>
+      </div>
+      {% include "components/button.html" with label="Voir la file" href_name="events:admin_list" variant="primary" %}
+    </div>
+  {% endif %}
+  <div class="flex items-center justify-between mb-4">
+    <h2 class="font-display text-lg text-primary-600">{% translate "Événements récents" %}</h2>
+    <a href="{% url 'events:admin_list' %}"
+       class="inline-flex items-center gap-1.5 text-sm font-medium text-primary-600 hover:underline">
+      {% translate "Tout voir" %}
+      {% include "components/icon_arrow.html" %}
+    </a>
+  </div>
+  <div class="bg-paper rounded-card shadow-card overflow-hidden overflow-x-auto">
+    <table class="w-full text-sm min-w-[560px]">
+      <thead class="bg-primary-50 text-primary-600 text-left">
         <tr>
-          <th>{% translate "Titre" %}</th>
-          <th>{% translate "Organisateur" %}</th>
-          <th>{% translate "Statut" %}</th>
-          <th>{% translate "Date" %}</th>
+          <th class="px-4 py-3 font-medium">{% translate "Titre" %}</th>
+          <th class="px-4 py-3 font-medium">{% translate "Organisateur" %}</th>
+          <th class="px-4 py-3 font-medium">{% translate "Statut" %}</th>
+          <th class="px-4 py-3 font-medium">{% translate "Date" %}</th>
         </tr>
       </thead>
       <tbody>
         {% for event in evenements_recents %}
+          <tr class="border-t border-primary-50 hover:bg-primary-50/40">
+            <td class="px-4 py-3">
+              <a href="{% url 'events:detail' event_id=event.id %}"
+                 class="text-primary-600 font-medium hover:underline">{{ event.titre }}</a>
+            </td>
+            <td class="px-4 py-3 text-ink-muted">{{ event.organizer.user.email }}</td>
+            <td class="px-4 py-3">
+              {% include "components/badge_seal.html" with label=event.get_statut_display tone="success" %}
+            </td>
+            <td class="px-4 py-3 text-ink-muted font-mono">{{ event.date_debut|date:"d/m/Y H:i" }}</td>
+          </tr>
+        {% empty %}
           <tr>
-            <td><a href="{% url 'events:detail' event_id=event.id %}">{{ event.titre }}</a></td>
-            <td>{{ event.organizer.user.email }}</td>
-            <td>{{ event.get_statut_display }}</td>
-            <td>{{ event.date_debut|date:"d/m/Y H:i" }}</td>
+            <td colspan="4" class="px-4 py-6 text-center text-ink-muted">{% translate "Aucun événement pour le moment." %}</td>
           </tr>
         {% endfor %}
       </tbody>
     </table>
-    <a href="{% url 'events:admin_list' %}" class="btn btn-primary">{% translate "Voir la file de modération" %}</a>
   </div>
 {% endblock content %}

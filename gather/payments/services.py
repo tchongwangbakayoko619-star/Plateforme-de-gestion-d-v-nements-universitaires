@@ -5,7 +5,9 @@ from typing import TYPE_CHECKING
 
 from django.core.exceptions import ValidationError
 from django.db import transaction
+from django.db.models import F
 
+from gather.events.models import Event
 from gather.inscriptions.services import TicketService
 
 from .models import Payment
@@ -75,8 +77,22 @@ class PaymentService:
         return payment
 
     @staticmethod
+    def _confirmer_inscription_et_billet(inscription: Inscription) -> None:
+        """Passe l'inscription à CONFIRMEE (si nécessaire), décrémente les
+        places, puis génère le billet. Idempotent : appelable plusieurs
+        fois sans effet de bord si l'inscription est déjà confirmée."""
+        if inscription.statut == inscription.Statut.EN_ATTENTE_PAIEMENT:
+            inscription.statut = inscription.Statut.CONFIRMEE
+            inscription.save(update_fields=["statut"])
+            Event.objects.filter(pk=inscription.event_id).update(
+                places_restantes=F("places_restantes") - 1,
+            )
+        TicketService.generer_billet(inscription)
+
+    @classmethod
     @transaction.atomic
     def confirmer_paiement(
+        cls,
         reference_externe: str,
         nouveau_statut: str,
         payload_brut: dict | None = None,
@@ -92,7 +108,10 @@ class PaymentService:
             raise ValidationError(message) from None
 
         if payment.statut == Payment.Statut.REUSSI:
-            return payment  # déjà traité — idempotence
+            # Déjà confirmé : on s'assure juste que l'inscription/billet
+            # sont cohérents, sans rejouer la transaction (idempotence).
+            cls._confirmer_inscription_et_billet(payment.inscription)
+            return payment
 
         payment.statut = nouveau_statut
         payment.save(update_fields=["statut"])
@@ -104,7 +123,7 @@ class PaymentService:
         )
 
         if nouveau_statut == Payment.Statut.REUSSI:
-            TicketService.generer_billet(payment.inscription)
+            cls._confirmer_inscription_et_billet(payment.inscription)
             logger.info(
                 "Paiement confirmé, billet généré : %s",
                 payment.reference_externe,

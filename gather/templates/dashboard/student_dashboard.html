@@ -4,60 +4,64 @@
 {% load i18n %}
 
 {% block title %}
-  {% translate "Tableau de bord — Étudiant" %}
+  {% translate "Mon espace" %}
 {% endblock title %}
 {% block content %}
-  <div class="container py-4">
-    <h1 class="h4 mb-4">{% translate "Mon espace" %}</h1>
-    <div class="row g-3 mb-4">
-      <div class="col-md-6">
-        <div class="card text-center p-3">
-          <div class="h3 mb-0">{{ total_inscriptions }}</div>
-          <div class="text-muted small">{% translate "Mes inscriptions" %}</div>
+  <div class="flex items-center gap-3 mb-2">
+    {% if user.photo %}
+      <img src="{{ user.photo.url }}"
+           alt=""
+           class="w-10 h-10 rounded-seal object-cover border-2 border-gold" />
+    {% else %}
+      <div class="w-10 h-10 rounded-seal bg-primary-50 border-2 border-gold flex items-center justify-center">
+        <span class="font-display text-sm text-primary-600">{{ user.first_name|slice:":1" }}{{ user.last_name|slice:":1" }}</span>
+      </div>
+    {% endif %}
+    <div>
+      <h1 class="font-display text-2xl text-primary-600">{% translate "Mon espace" %}</h1>
+    </div>
+  </div>
+  <div class="grid grid-cols-2 gap-3 mb-8 max-w-md">
+    {% include "components/stat_card.html" with value=total_inscriptions label="Mes inscriptions" %}
+    {% include "components/stat_card.html" with value=evenements_a_venir label="À venir" %}
+  </div>
+  <div class="flex items-center justify-between mb-4">
+    <h2 class="font-display text-lg text-primary-600">{% translate "Mes inscriptions récentes" %}</h2>
+  </div>
+  <div class="bg-paper rounded-card shadow-card overflow-hidden mb-10">
+    {% for inscription in mes_inscriptions %}
+      <div class="flex items-center justify-between px-5 py-4 {% if not forloop.last %}border-b border-primary-50{% endif %}">
+        <div>
+          <p class="font-medium text-primary-600">{{ inscription.event.titre }}</p>
+          <p class="text-xs text-ink-muted mt-0.5">{{ inscription.event.date_debut|date:"d/m/Y H:i" }}</p>
+        </div>
+        <div class="flex items-center gap-3">
+          {% include "components/badge_seal.html" with label=inscription.get_statut_display tone="success" %}
+          {% if inscription.ticket %}
+            <a href="{% url 'inscriptions:billet' inscription_id=inscription.id %}"
+               class="text-sm font-medium text-tertiary-600 hover:underline whitespace-nowrap">
+              {% translate "Voir le billet" %}
+            </a>
+          {% endif %}
         </div>
       </div>
-      <div class="col-md-6">
-        <div class="card text-center p-3">
-          <div class="h3 mb-0">{{ evenements_a_venir }}</div>
-          <div class="text-muted small">{% translate "Événements à venir" %}</div>
-        </div>
-      </div>
-    </div>
-    <h2 class="h5 mb-3">{% translate "Mes inscriptions récentes" %}</h2>
-    <table class="table table-sm">
-      <thead>
-        <tr>
-          <th>{% translate "Événement" %}</th>
-          <th>{% translate "Statut" %}</th>
-          <th>{% translate "Billet" %}</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for inscription in mes_inscriptions %}
-          <tr>
-            <td>{{ inscription.event.titre }}</td>
-            <td>{{ inscription.get_statut_display }}</td>
-            <td>
-              {% if inscription.ticket %}
-                <a href="{% url 'inscriptions:billet' inscription_id=inscription.id %}">{% translate "Voir le billet" %}</a>
-              {% else %}—{% endif %}
-            </td>
-          </tr>
-        {% endfor %}
-      </tbody>
-    </table>
-    <h2 class="h5 mb-3 mt-4">{% translate "Événements à découvrir" %}</h2>
-    <div class="row g-3">
-      {% for event in evenements_publies %}
-        <div class="col-md-4">
-          <div class="card p-3">
-            <h3 class="h6">{{ event.titre }}</h3>
-            <p class="small text-muted mb-1">{{ event.date_debut|date:"d/m/Y H:i" }}</p>
-            <a href="{% url 'events:detail' event_id=event.id %}"
-               class="btn btn-sm btn-outline-primary">{% translate "Voir" %}</a>
-          </div>
-        </div>
-      {% endfor %}
-    </div>
+    {% empty %}
+      <p class="px-5 py-8 text-center text-ink-muted">{% translate "Vous n'avez aucune inscription pour le moment." %}</p>
+    {% endfor %}
+  </div>
+  <div class="flex items-center justify-between mb-4">
+    <h2 class="font-display text-lg text-primary-600">{% translate "Événements à découvrir" %}</h2>
+    <a href="{% url 'events:list' %}"
+       class="inline-flex items-center gap-1.5 text-sm font-medium text-primary-600 hover:underline">
+      {% translate "Tout voir" %}
+      {% include "components/icon_arrow.html" %}
+    </a>
+  </div>
+  <div class="grid sm:grid-cols-2 md:grid-cols-3 gap-5">
+    {% for event in evenements_publies %}
+      {% include "components/card_event.html" with event=event %}
+    {% empty %}
+      <p class="text-ink-muted col-span-3">{% translate "Aucun événement publié pour le moment." %}</p>
+    {% endfor %}
   </div>
 {% endblock content %}

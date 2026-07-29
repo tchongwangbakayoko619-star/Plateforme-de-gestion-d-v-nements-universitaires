@@ -57,15 +57,20 @@ class InscriptionService:
             message = "Vous êtes déjà inscrit à cet événement."
             raise ValidationError(message)
 
+        est_payant = event_verrouille.type_paiement == Event.TypePaiement.PAYANT
+
         inscription = Inscription.objects.create(
             event=event_verrouille,
             student=student,
-            statut=Inscription.Statut.CONFIRMEE,
+            statut=Inscription.Statut.EN_ATTENTE_PAIEMENT
+            if est_payant
+            else Inscription.Statut.CONFIRMEE,
         )
 
-        Event.objects.filter(pk=event_verrouille.pk).update(
-            places_restantes=F("places_restantes") - 1,
-        )
+        if not est_payant:
+            Event.objects.filter(pk=event_verrouille.pk).update(
+                places_restantes=F("places_restantes") - 1,
+            )
 
         if event_verrouille.type_paiement == Event.TypePaiement.GRATUIT:
             TicketService.generer_billet(inscription)
@@ -93,13 +98,15 @@ class InscriptionService:
         inscription_verrouillee = Inscription.objects.select_for_update().get(
             pk=inscription.pk,
         )
+        statut_precedent = inscription_verrouillee.statut
         inscription_verrouillee.statut = Inscription.Statut.ANNULEE
         inscription_verrouillee.date_annulation = timezone.now()
         inscription_verrouillee.save(update_fields=["statut", "date_annulation"])
 
-        Event.objects.filter(pk=inscription_verrouillee.event_id).update(
-            places_restantes=F("places_restantes") + 1,
-        )
+        if statut_precedent == Inscription.Statut.CONFIRMEE:
+            Event.objects.filter(pk=inscription_verrouillee.event_id).update(
+                places_restantes=F("places_restantes") + 1,
+            )
 
         ticket = getattr(inscription_verrouillee, "ticket", None)
         if ticket and ticket.statut == Ticket.Statut.VALIDE:

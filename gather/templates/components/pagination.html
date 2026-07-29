@@ -1,0 +1,26 @@
+{# gather/templates/components/pagination.html #}
+{% comment %}
+Usage : {% include "components/pagination.html" with page_obj=page_obj %}
+Ajoute automatiquement les query params existants (search, categorie, statut).
+{% endcomment %}
+{% load i18n %}
+
+{% if page_obj.has_other_pages %}
+  <div class="flex items-center justify-center gap-2 py-6">
+    {% if page_obj.has_previous %}
+      <a href="?page={{ page_obj.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if categorie_active %}&categorie={{ categorie_active }}{% endif %}"
+         class="px-3.5 py-2 rounded-card text-sm font-medium text-primary-600 border border-primary-100 hover:bg-primary-50 transition-colors">
+        {% translate "Précédent" %}
+      </a>
+    {% endif %}
+    <span class="px-3 text-sm text-ink-muted">
+      {% blocktranslate with current=page_obj.number total=page_obj.paginator.num_pages %}Page {{ current }} sur {{ total }}{% endblocktranslate %}
+    </span>
+    {% if page_obj.has_next %}
+      <a href="?page={{ page_obj.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if categorie_active %}&categorie={{ categorie_active }}{% endif %}"
+         class="px-3.5 py-2 rounded-card text-sm font-medium text-primary-600 border border-primary-100 hover:bg-primary-50 transition-colors">
+        {% translate "Suivant" %}
+      </a>
+    {% endif %}
+  </div>
+{% endif %}

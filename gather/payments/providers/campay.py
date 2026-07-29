@@ -37,6 +37,20 @@ class CamPayProvider(PaymentProvider):
         self.app_username = settings.CAMPAY_APP_USERNAME
         self.app_password = settings.CAMPAY_APP_PASSWORD
 
+    @staticmethod
+    def _normaliser_telephone(telephone: str) -> str:
+        """CamPay exige le format 237XXXXXXXXX (indicatif Cameroun, sans +).
+
+        Accepte en entrée : "690000000", "0690000000", "+237690000000",
+        "237 690 000 000" — retourne toujours "237690000000".
+        """
+        numero = telephone.strip().replace(" ", "").replace("+", "")
+        if numero.startswith("237"):
+            return numero
+        if numero.startswith("0"):
+            numero = numero[1:]
+        return f"237{numero}"
+
     def _obtenir_token(self) -> str:
         try:
             reponse = requests.post(
@@ -65,7 +79,7 @@ class CamPayProvider(PaymentProvider):
         corps = {
             "amount": str(int(payment.montant)),
             "currency": payment.devise,
-            "from": payment.telephone,
+            "from": self._normaliser_telephone(payment.telephone),
             "description": f"Inscription événement — {payment.inscription.event.titre}",
             "external_reference": str(payment.id),
         }
@@ -79,7 +93,13 @@ class CamPayProvider(PaymentProvider):
             )
             reponse.raise_for_status()
         except requests.RequestException as exc:
-            logger.exception("Échec de la demande de paiement CamPay.")
+            corps_reponse = getattr(exc.response, "text", "pas de réponse")
+            logger.exception(
+                "Échec de la demande de paiement CamPay. Corps envoyé: %s. "
+                "Réponse CamPay: %s",
+                corps,
+                corps_reponse,
+            )
             message = "Impossible de contacter CamPay pour ce paiement."
             raise PaymentProviderError(message) from exc
 

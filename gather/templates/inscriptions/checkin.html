@@ -1,3 +1,4 @@
+{# gather/templates/inscriptions/checkin.html #}
 {% extends "base.html" %}
 
 {% load i18n %}
@@ -6,13 +7,26 @@
   {% translate "Check-in" %}
 {% endblock title %}
 {% block content %}
-  <div class="container py-4">
-    <h1 class="h4 mb-4">{% translate "Scanner un billet" %}</h1>
-    <div id="reader" style="width: 100%; max-width: 400px;"></div>
-    <div id="resultat" class="mt-4"></div>
-    <button id="btn-relancer" class="btn btn-secondary mt-3 d-none">{% translate "Scanner un autre billet" %}</button>
+  <div class="max-w-lg mx-auto">
+    <p class="text-tertiary-600 text-sm font-medium uppercase tracking-wide mb-2 text-center">
+      {% translate "Contrôle d'accès" %}
+    </p>
+    <h1 class="font-display text-2xl text-primary-600 mb-2 text-center">{% translate "Scanner un billet" %}</h1>
+    <p id="contexte-evenement"
+       class="text-sm text-ink-muted text-center mb-6"></p>
+    <div class="bg-paper rounded-card shadow-card p-4 mb-5">
+      <div id="reader" class="rounded-card overflow-hidden"></div>
+    </div>
+    <div id="resultat"></div>
+    <button id="btn-relancer"
+            class="hidden w-full px-5 py-2.5 rounded-card text-sm font-medium bg-primary-600 text-paper hover:bg-primary-700 mt-3">
+      {% translate "Scanner un autre billet" %}
+    </button>
+    <div id="lien-retour" class="text-center mt-4"></div>
   </div>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js"></script>
+{% endblock content %}
+{% block extra_js %}
   <script>
     const resultatDiv = document.getElementById("resultat");
     const btnRelancer = document.getElementById("btn-relancer");
@@ -26,10 +40,22 @@
 
     const html5QrCode = new Html5Qrcode("reader");
 
+    // Contexte visuel : d'où vient l'organisateur (lien depuis un événement précis)
+    const params = new URLSearchParams(window.location.search);
+    const eventIdCible = params.get("event_id");
+    if (eventIdCible) {
+      document.getElementById("contexte-evenement").textContent =
+        "{% translate 'Contrôle en cours pour un événement spécifique.' %}";
+      document.getElementById("lien-retour").innerHTML =
+        `<a href="/events/organisateur/${eventIdCible}/" class="text-sm font-medium text-primary-600 hover:underline">
+        {% translate "← Retour à la gestion de l'événement" %}
+      </a>`;
+    }
+
     function demarrerScan() {
       scannerActif = true;
       resultatDiv.innerHTML = "";
-      btnRelancer.classList.add("d-none");
+      btnRelancer.classList.add("hidden");
       html5QrCode.start({
           facingMode: "environment"
         }, {
@@ -60,20 +86,34 @@
         });
         const data = await reponse.json();
 
-        resultatDiv.innerHTML = reponse.ok ?
-          `<div class="alert alert-success">
-             <strong>{% translate "Billet validé" %}</strong><br />
-             {% translate "Participant" %} : ${data.participant}<br />
-             {% translate "Événement" %} : ${data.evenement}<br />
-             {% translate "Heure" %} : ${data.heure}
-           </div>` :
-          `<div class="alert alert-danger">
-             <strong>{% translate "Erreur" %}</strong><br />${data.erreur}
-           </div>`;
+        if (reponse.ok) {
+          resultatDiv.innerHTML = `
+          <div class="bg-tertiary-50 border-l-4 border-tertiary-500 rounded-card p-5">
+            <div class="flex items-center gap-2 mb-3">
+              <span class="w-8 h-8 rounded-seal bg-tertiary-500 text-paper flex items-center justify-center text-sm">✓</span>
+              <span class="font-display text-tertiary-600">{% translate "Billet validé" %}</span>
+            </div>
+            <dl class="text-sm space-y-1.5">
+              <div class="flex justify-between"><dt class="text-ink-muted">{% translate "Participant" %}</dt><dd class="font-medium text-primary-600">${data.participant}</dd></div>
+              <div class="flex justify-between"><dt class="text-ink-muted">{% translate "Événement" %}</dt><dd class="font-medium text-primary-600">${data.evenement}</dd></div>
+              <div class="flex justify-between"><dt class="text-ink-muted">{% translate "Heure" %}</dt><dd class="font-mono text-primary-600">${new Date(data.heure).toLocaleTimeString("fr-FR")}</dd></div>
+            </dl>
+          </div>`;
+        } else {
+          resultatDiv.innerHTML = `
+          <div class="bg-danger-50 border-l-4 border-danger-500 rounded-card p-5">
+            <div class="flex items-center gap-2 mb-1">
+              <span class="w-8 h-8 rounded-seal bg-danger-500 text-paper flex items-center justify-center text-sm">✕</span>
+              <span class="font-display text-danger-500">{% translate "Erreur" %}</span>
+            </div>
+            <p class="text-sm text-danger-500 mt-2">${data.erreur}</p>
+          </div>`;
+        }
       } catch (e) {
-        resultatDiv.innerHTML = `<div class="alert alert-danger">{% translate "Erreur" %} : ${e.message}</div>`;
+        resultatDiv.innerHTML = `<div class="bg-danger-50 border-l-4 border-danger-500 rounded-card p-5 text-sm text-danger-500">{% translate "Erreur réseau." %}</div>`;
       }
-      btnRelancer.classList.remove("d-none");
+
+      btnRelancer.classList.remove("hidden");
     }
 
     btnRelancer.addEventListener("click", () => {
@@ -83,4 +123,4 @@
 
     demarrerScan();
   </script>
-{% endblock content %}
+{% endblock extra_js %}

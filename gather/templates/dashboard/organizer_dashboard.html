@@ -7,56 +7,82 @@
   {% translate "Tableau de bord — Organisateur" %}
 {% endblock title %}
 {% block content %}
-  <div class="container py-4">
-    <h1 class="h4 mb-4">{% translate "Mes événements" %}</h1>
-    <div class="row g-3 mb-4">
-      <div class="col-md-3">
-        <div class="card text-center p-3">
-          <div class="h3 mb-0">{{ total_evenements }}</div>
-          <div class="text-muted small">{% translate "Total" %}</div>
-        </div>
+  <div class="flex items-center gap-3 mb-2">
+    {% if user.photo %}
+      <img src="{{ user.photo.url }}"
+           alt=""
+           class="w-10 h-10 rounded-seal object-cover border-2 border-gold" />
+    {% else %}
+      <div class="w-10 h-10 rounded-seal bg-primary-50 border-2 border-gold flex items-center justify-center">
+        <span class="font-display text-sm text-primary-600">{{ user.first_name|slice:":1" }}{{ user.last_name|slice:":1" }}</span>
       </div>
-      <div class="col-md-3">
-        <div class="card text-center p-3">
-          <div class="h3 mb-0">{{ en_attente }}</div>
-          <div class="text-muted small">{% translate "En attente" %}</div>
-        </div>
-      </div>
-      <div class="col-md-3">
-        <div class="card text-center p-3">
-          <div class="h3 mb-0">{{ publies }}</div>
-          <div class="text-muted small">{% translate "Publiés" %}</div>
-        </div>
-      </div>
-      <div class="col-md-3">
-        <div class="card text-center p-3">
-          <div class="h3 mb-0">{{ total_inscrits }}</div>
-          <div class="text-muted small">{% translate "Inscrits (tous événements)" %}</div>
-        </div>
-      </div>
+    {% endif %}
+    <div>
+      <h1 class="font-display text-2xl text-primary-600">{% translate "Mes événements" %}</h1>
     </div>
-    <table class="table table-sm">
-      <thead>
+  </div>
+  <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-8">
+    {% include "components/stat_card.html" with value=total_evenements label="Total" %}
+    {% include "components/stat_card.html" with value=en_attente label="En attente" %}
+    {% include "components/stat_card.html" with value=publies label="Publiés" %}
+    {% include "components/stat_card.html" with value=total_inscrits label="Inscrits" %}
+  </div>
+  <div class="flex gap-3 mb-6">
+    {% include "components/button.html" with label="Créer un événement" href_name="events:organizer_create" variant="primary" %}
+    {% include "components/button.html" with label="Scanner les billets" href=checkin_url variant="secondary" %}
+  </div>
+  <div class="bg-paper rounded-card shadow-card overflow-hidden">
+    <table class="w-full text-sm">
+      <thead class="bg-primary-50 text-primary-600 text-left">
         <tr>
-          <th>{% translate "Titre" %}</th>
-          <th>{% translate "Statut" %}</th>
-          <th>{% translate "Places" %}</th>
-          <th>{% translate "Date" %}</th>
+          <th class="px-4 py-3 font-medium">{% translate "Titre" %}</th>
+          <th class="px-4 py-3 font-medium">{% translate "Statut" %}</th>
+          <th class="px-4 py-3 font-medium">{% translate "Places" %}</th>
+          <th class="px-4 py-3 font-medium">{% translate "Date" %}</th>
+          <th class="px-4 py-3 font-medium">{% translate "Actions" %}</th>
         </tr>
       </thead>
       <tbody>
         {% for event in mes_evenements %}
-          <tr>
-            <td><a href="{% url 'events:organizer_detail' event_id=event.id %}">{{ event.titre }}</a></td>
-            <td>{{ event.get_statut_display }}</td>
-            <td>{{ event.places_restantes }}/{{ event.capacite_max }}</td>
-            <td>{{ event.date_debut|date:"d/m/Y H:i" }}</td>
+          <tr class="border-t border-primary-50 hover:bg-primary-50/40">
+            <td class="px-4 py-3">
+              <a href="{% url 'events:organizer_detail' event_id=event.id %}"
+                 class="text-primary-600 font-medium hover:underline">{{ event.titre }}</a>
+            </td>
+            <td class="px-4 py-3">
+              {% include "components/badge_seal.html" with label=event.get_statut_display tone="success" %}
+            </td>
+            <td class="px-4 py-3 font-mono text-ink-muted">{{ event.places_restantes }}/{{ event.capacite_max }}</td>
+            <td class="px-4 py-3 text-ink-muted">{{ event.date_debut|date:"d/m/Y H:i" }}</td>
+            <td class="px-4 py-3">
+              <div class="flex flex-wrap gap-2">
+                <a href="{% url 'events:organizer_detail' event_id=event.id %}"
+                   class="inline-flex items-center px-3 py-1.5 rounded-card text-xs font-medium bg-paper text-primary-600 border border-primary-100 hover:bg-primary-50 transition-colors">
+                  {% translate "Détails" %}
+                </a>
+                {% if event.statut == "draft" or event.statut == "revision_requested" %}
+                  <a href="{% url 'events:organizer_update' event_id=event.id %}"
+                     class="inline-flex items-center px-3 py-1.5 rounded-card text-xs font-medium bg-primary-50 text-primary-600 hover:bg-primary-100 transition-colors">
+                    {% translate "Modifier" %}
+                  </a>
+                {% endif %}
+                {% if event.peut_etre_supprime %}
+                  <form method="post"
+                        action="{% url 'events:organizer_delete' event_id=event.id %}"
+                        onsubmit="return confirm('{% translate "Confirmer la suppression ?" %}');"
+                        class="inline">
+                    {% csrf_token %}
+                    <button type="submit"
+                            class="inline-flex items-center px-3 py-1.5 rounded-card text-xs font-medium bg-danger-50 text-danger-500 hover:bg-danger-100 transition-colors">
+                      {% translate "Supprimer" %}
+                    </button>
+                  </form>
+                {% endif %}
+              </div>
+            </td>
           </tr>
         {% endfor %}
       </tbody>
     </table>
-    <a href="{% url 'events:organizer_create' %}" class="btn btn-primary">{% translate "Créer un événement" %}</a>
-    <a href="{% url 'inscriptions:checkin_page' %}"
-       class="btn btn-outline-secondary">{% translate "Scanner les billets (check-in)" %}</a>
   </div>
 {% endblock content %}

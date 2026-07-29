@@ -1,4 +1,5 @@
 from django.urls import path
+from django.views.generic.base import RedirectView
 
 from . import views
 
@@ -30,6 +31,10 @@ urlpatterns = [
         "organisateur/<uuid:event_id>/soumettre/",
         views.event_soumettre_view,
         name="soumettre",
+    ),
+    path(
+        "organizer/<uuid:event_id>/",
+        RedirectView.as_view(pattern_name="events:organizer_detail", permanent=True),
     ),
     # Gestion administrateur
     path("admin/", views.admin_event_list_view, name="admin_list"),

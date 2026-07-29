@@ -4,9 +4,11 @@ from __future__ import annotations
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import Avg
 from django.db.models import Count
+from django.db.models import Q
 from django.db.models import Sum
 from django.shortcuts import redirect
 from django.urls import reverse
+from django.utils import timezone
 from django.views.generic import TemplateView
 
 from gather.events.models import Event
@@ -14,8 +16,43 @@ from gather.events.models import EventReview
 from gather.inscriptions.models import Inscription
 from gather.notifications.services import NotificationService
 from gather.payments.models import Payment
+from gather.statistic.services import StatisticsService
 from gather.users.mixins import RoleRequiredMixin
 from gather.users.models import User
+
+
+class HomeView(TemplateView):
+    template_name = "pages/home.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        stats = StatisticsService.statistiques_globales()
+        context["stats"] = {
+            "total_evenements": stats["evenements_publies"],
+            "total_participants": stats["total_participants"],
+            "note_moyenne": round(stats["note_moyenne_globale"], 1),
+        }
+        context["evenements_a_la_une"] = Event.objects.filter(
+            statut=Event.Statut.PUBLISHED,
+        ).order_by("date_debut")[:3]
+        context["avis_termines"] = (
+            EventReview.objects.select_related(
+                "student__user",
+                "event",
+            )
+            .filter(
+                Q(event__statut=Event.Statut.FINISHED)
+                | Q(
+                    event__statut=Event.Statut.PUBLISHED,
+                    event__date_fin__lte=timezone.now(),
+                ),
+            )
+            .order_by("-created_at")[:4]
+        )
+        return context
+
+
+home_view = HomeView.as_view()
 
 
 class DashboardRedirectView(LoginRequiredMixin, TemplateView):

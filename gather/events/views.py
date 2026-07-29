@@ -15,6 +15,7 @@ from django.views.generic import FormView
 from django.views.generic import ListView
 from django.views.generic import UpdateView
 
+from gather.inscriptions.models import Inscription
 from gather.users.mixins import RoleRequiredMixin
 from gather.users.models import User
 
@@ -49,6 +50,13 @@ class EventListView(ListView):
         }
         return EventService.get_evenements(filters)
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["categorie_active"] = self.request.GET.get("categorie", "")
+        context["search_query"] = self.request.GET.get("search", "")
+        context["categories"] = Event.Categorie.choices
+        return context
+
 
 event_list_view = EventListView.as_view()
 
@@ -62,7 +70,7 @@ class EventDetailView(DetailView):
     pk_url_kwarg = "event_id"
 
     def get_queryset(self):
-        return Event.objects.select_related("organizer")
+        return Event.objects.select_related("organizer__user")
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -70,13 +78,27 @@ class EventDetailView(DetailView):
         context["stats"] = ReviewService.get_stats_evenement(self.object)
 
         user = self.request.user
+        context["mon_inscription"] = None
+        context["mon_avis"] = None
         if user.is_authenticated:
             student = getattr(user, "student_profile", None)
-            context["mon_avis"] = (
-                EventReview.objects.filter(event=self.object, student=student).first()
-                if student
-                else None
-            )
+            if student:
+                context["mon_inscription"] = (
+                    Inscription.objects.filter(
+                        event=self.object,
+                        student=student,
+                        statut__in=[
+                            Inscription.Statut.CONFIRMEE,
+                            Inscription.Statut.EN_ATTENTE_PAIEMENT,
+                        ],
+                    )
+                    .select_related("ticket")
+                    .first()
+                )
+                context["mon_avis"] = EventReview.objects.filter(
+                    event=self.object,
+                    student=student,
+                ).first()
         return context
 
 
@@ -131,18 +153,48 @@ class EventCreateView(RoleRequiredMixin, FormView):
 event_create_view = EventCreateView.as_view()
 
 
-class EventUpdateView(RoleRequiredMixin, UpdateView):
-    """Modification d'un événement en brouillon ou en révision. La
-    validation du statut modifiable reste dans EventService."""
+class EventUpdateView(RoleRequiredMixin, FormView):
+    """Modification d'un événement en brouillon ou en révision.
+    Utilise FormView au lieu de UpdateView pour éviter le conflit
+    entre form.save() et EventService.modifier()."""
 
-    model = Event
     form_class = EventForm
     template_name = "events/event_form.html"
-    pk_url_kwarg = "event_id"
     allowed_roles = [User.Role.ORGANISATEUR]
 
-    def get_queryset(self):
-        return Event.objects.filter(organizer=self.request.user.organizer_profile)
+    def dispatch(self, request, *args, **kwargs):
+        self.object = get_object_or_404(
+            Event.objects.filter(organizer=request.user.organizer_profile),
+            pk=kwargs["event_id"],
+        )
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_initial(self):
+        """Pré-remplit le formulaire avec les données de l'événement."""
+        return {
+            "titre": self.object.titre,
+            "description": self.object.description,
+            "categorie": self.object.categorie,
+            "lieu": self.object.lieu,
+            "latitude": self.object.latitude,
+            "longitude": self.object.longitude,
+            "date_debut": self.object.date_debut.strftime("%Y-%m-%dT%H:%M")
+            if self.object.date_debut
+            else "",
+            "date_fin": self.object.date_fin.strftime("%Y-%m-%dT%H:%M")
+            if self.object.date_fin
+            else "",
+            "capacite_max": self.object.capacite_max,
+            "type_paiement": self.object.type_paiement,
+            "prix": self.object.prix,
+            "devise": self.object.devise,
+            "statut": self.object.statut,
+        }
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["object"] = self.object
+        return context
 
     def form_valid(self, form):
         try:
@@ -221,8 +273,6 @@ event_soumettre_view = EventSoumettreView.as_view()
 
 
 class AdminEventListView(RoleRequiredMixin, ListView):
-    """File d'attente de modération pour l'administrateur."""
-
     model = Event
     template_name = "events/admin_event_list.html"
     context_object_name = "evenements"
@@ -232,6 +282,11 @@ class AdminEventListView(RoleRequiredMixin, ListView):
     def get_queryset(self):
         statut = self.request.GET.get("statut", Event.Statut.PENDING)
         return EventService.get_evenements({"statut": statut})
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["statuts_disponibles"] = Event.Statut.choices
+        return context
 
 
 admin_event_list_view = AdminEventListView.as_view()
@@ -362,9 +417,29 @@ class EventReviewCreateView(RoleRequiredMixin, FormView):
     def get_event(self):
         return get_object_or_404(Event, pk=self.kwargs["event_id"])
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["event"] = self.get_event()
+        return context
+
     def form_valid(self, form):
         event = self.get_event()
         student = self.request.user.student_profile
+
+        if not Inscription.objects.filter(
+            event=event,
+            student=student,
+            statut=Inscription.Statut.CONFIRMEE,
+        ).exists():
+            form.add_error(
+                None,
+                _(
+                    "Vous devez être inscrit et avoir payé cet "
+                    "événement pour laisser un avis.",
+                ),
+            )
+            return self.form_invalid(form)
+
         try:
             ReviewService.ajouter_avis(
                 student,

@@ -1,20 +1,3 @@
 {% load allauth %}
 
-{% comment %} djlint:off {% endcomment %}
-<{% if attrs.href %}a href="{{ attrs.href }}"{% else %}button{% endif %}
-                      {% if attrs.form %}form="{{ attrs.form }}"{% endif %}
-                      {% if attrs.id %}id="{{ attrs.id }}"{% endif %}
-                      {% if attrs.name %}name="{{ attrs.name }}"{% endif %}
-                      {% if attrs.type %}type="{{ attrs.type }}"{% endif %}
-                      class="btn
-{% if 'success' in attrs.tags %}btn-success
-{% elif 'warning' in attrs.tags %}btn-warning
-{% elif 'secondary' in attrs.tags %}btn-secondary
-{% elif 'danger' in attrs.tags %}btn-danger
-{% elif 'primary' in attrs.tags %}btn-primary
-{% else %}btn-primary
-{% endif %}"
->
-  {% slot %}
-  {% endslot %}
-  </{% if attrs.href %}a{% else %}button{% endif %}>
+<{% if attrs.href %}a href="{{ attrs.href }}"{% else %}button{% endif %}{% if attrs.type %} type="{{ attrs.type }}"{% endif %}{% if attrs.name %} name="{{ attrs.name }}"{% endif %}{% if attrs.id %} id="{{ attrs.id }}"{% endif %} class="inline-flex items-center justify-center px-5 py-2.5 rounded-card text-sm font-medium transition-colors {% if 'danger' in attrs.tags %}bg-danger-500 text-paper hover:bg-danger-500/90{% elif 'secondary' in attrs.tags %}border border-primary-100 text-primary-600 hover:bg-primary-50{% else %}bg-primary-600 text-paper hover:bg-primary-700{% endif %}">{% slot %}{% endslot %}</{% if attrs.href %}a{% else %}button{% endif %}>

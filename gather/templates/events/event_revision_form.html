@@ -1,3 +1,4 @@
+{# gather/templates/events/event_refuser_form.html — même structure pour révision/annulation, change juste les textes #}
 {% extends "base.html" %}
 
 {% load i18n %}
@@ -6,11 +7,29 @@
   {% translate "Demander une révision" %}
 {% endblock title %}
 {% block content %}
-  <h1>{% translate "Demander une révision" %}</h1>
-  <form method="post">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit">{% translate "Envoyer la demande" %}</button>
-  </form>
-  <p><a href="{% url 'events:admin_list' %}">{% translate "Annuler" %}</a></p>
+  <div class="max-w-lg mx-auto">
+    <h1 class="font-display text-xl text-primary-600 mb-2">{% translate "Demander une révision" %}</h1>
+    <p class="text-sm text-ink-muted mb-6">
+      {% translate "Expliquez ce qui doit être corrigé avant nouvelle soumission." %}
+    </p>
+    <form method="post" class="bg-paper rounded-card shadow-card p-6 space-y-4">
+      {% csrf_token %}
+      <div>
+        <label class="block text-sm font-medium text-primary-600 mb-1.5"
+               for="{{ form.commentaire.id_for_label }}">{% translate "Commentaire" %}</label>
+        {{ form.commentaire }}
+        {% if form.commentaire.errors %}<p class="text-xs text-danger-500 mt-1">{{ form.commentaire.errors|join:", " }}</p>{% endif %}
+      </div>
+      <div class="flex gap-3">
+        <button type="submit"
+                class="px-5 py-2.5 rounded-card text-sm font-medium bg-info-500 text-paper hover:bg-info-500/90">
+          {% translate "Envoyer la demande" %}
+        </button>
+        <a href="{% url 'events:admin_list' %}"
+           class="px-5 py-2.5 rounded-card text-sm font-medium bg-paper text-primary-600 border border-primary-100 hover:bg-primary-50">
+          {% translate "Annuler" %}
+        </a>
+      </div>
+    </form>
+  </div>
 {% endblock content %}

@@ -1,131 +1,92 @@
+{# gather/templates/base.html #}
 {% load static i18n %}
 
 <!DOCTYPE html>
-{% get_current_language as LANGUAGE_CODE %}
-<html lang="{{ LANGUAGE_CODE }}">
+<html lang="fr" class="scroll-smooth">
   <head>
     <meta charset="utf-8" />
-    <meta http-equiv="x-ua-compatible" content="ie=edge" />
-    <title>
-      {% block title %}
-        Gather
-      {% endblock title %}
-    </title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description"
-          content="application robuste de gestion d'evenement dans une universite" />
-    <meta name="author" content="tchongwang bakayoko" />
-    <link rel="icon" href="{% static 'images/favicons/favicon.ico' %}" />
-    {% block css %}
-      <!-- Latest compiled and minified Bootstrap CSS -->
-      <link rel="stylesheet"
-            href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.2.3/css/bootstrap.min.css"
-            integrity="sha512-SbiR/eusphKoMVVXysTKG/7VseWii+Y3FdHrt0EpKgpToZeemhqHeZeLWLhJutz/2ut2Vw1uQEj2MbRF+TVBUA=="
-            crossorigin="anonymous"
-            referrerpolicy="no-referrer" />
-      <!-- Your stuff: Third-party CSS libraries go here -->
-      <!-- This file stores project-specific CSS -->
-      <link href="{% static 'css/project.css' %}" rel="stylesheet" />
-    {% endblock css %}
-    <!-- Le javascript
-    ================================================== -->
-    {# Placed at the top of the document so pages load faster with defer #}
-    {% block javascript %}
-      <!-- Bootstrap JS -->
-      <script defer
-              src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.2.3/js/bootstrap.min.js"
-              integrity="sha512-1/RvZTcCDEUjY/CypiMz+iqqtaoQfAITmNSJY17Myp4Ms5mdxPS5UV7iOfdZoxcGhzFbOm6sntTKJppjvuhg4g=="
-              crossorigin="anonymous"
-              referrerpolicy="no-referrer"></script>
-      <!-- Your stuff: Third-party javascript libraries go here -->
-      <!-- place project specific Javascript in this file -->
-      <script defer src="{% static 'js/project.js' %}"></script>
-    {% endblock javascript %}
+    <title>{% block title %}Gather Université{% endblock title %}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap"
+          rel="stylesheet" />
+    <link href="{% static 'css/tailwind.css' %}" rel="stylesheet" />
   </head>
-  <body class="{% block bodyclass %}{% endblock bodyclass %}">
-    {% block body %}
-      <div class="mb-1">
-        <nav class="navbar navbar-expand-md navbar-light bg-light">
-          <div class="container-fluid">
-            <button class="navbar-toggler navbar-toggler-right"
-                    type="button"
-                    data-bs-toggle="collapse"
-                    data-bs-target="#navbarSupportedContent"
-                    aria-controls="navbarSupportedContent"
-                    aria-expanded="false"
-                    aria-label="Toggle navigation">
-              <span class="navbar-toggler-icon"></span>
-            </button>
-            <a class="navbar-brand" href="{% url 'home' %}">Gather</a>
-            <div class="collapse navbar-collapse" id="navbarSupportedContent">
-              <ul class="navbar-nav mr-auto">
-                <li class="nav-item active">
-                  <a class="nav-link" href="{% url 'home' %}">Home <span class="visually-hidden">(current)</span></a>
-                </li>
-                <li class="nav-item">
-                  <a class="nav-link" href="{% url 'about' %}">About</a>
-                </li>
-                {% if request.user.is_authenticated %}
-                  <li class="nav-item">
-                    <a class="nav-link" href="{% url 'users:profile' %}">{% translate "My Profile" %}</a>
-                  </li>
-                  <li class="nav-item">
-                    {# URL provided by django-allauth/account/urls.py #}
-                    <a class="nav-link" href="{% url 'account_logout' %}">{% translate "Sign Out" %}</a>
-                  </li>
+  <body class="min-h-screen flex flex-col">
+    <header class="relative z-50 header-glass bg-primary-700 text-paper sticky top-0">
+      <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
+        <a href="/" class="font-display text-xl">Gather</a>
+        <div class="hidden md:flex items-center gap-6 text-sm">
+          <a href="{% url 'events:list' %}"
+             class="hover:text-gold transition-colors">{% translate "Événements" %}</a>
+          {% if user.is_authenticated %}
+            <a href="{% url 'dashboard:redirect' %}"
+               class="hover:text-gold transition-colors">{% translate "Tableau de bord" %}</a>
+            <div class="relative">
+              <button data-dropdown-trigger="user-menu"
+                      aria-expanded="false"
+                      aria-haspopup="true"
+                      class="flex items-center gap-2 hover:text-gold transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-gold rounded">
+                {% if user.photo %}
+                  <img src="{{ user.photo.url }}"
+                       alt=""
+                       class="w-7 h-7 rounded-seal object-cover border border-gold/50" />
                 {% else %}
-                  {% if ACCOUNT_ALLOW_REGISTRATION %}
-                    <li class="nav-item">
-                      {# URL provided by django-allauth/account/urls.py #}
-                      <a id="sign-up-link" class="nav-link" href="{% url 'account_signup' %}">{% translate "Sign Up" %}</a>
-                    </li>
-                  {% endif %}
-                  <li class="nav-item">
-                    {# URL provided by django-allauth/account/urls.py #}
-                    <a id="log-in-link" class="nav-link" href="{% url 'account_login' %}">{% translate "Sign In" %}</a>
-                    {% load socialaccount %}
-
-                    <a href="{% provider_login_url 'google' %}">Se connecter avec Google</a>
-                    <a href="{% provider_login_url 'github' %}">Se connecter avec GitHub</a>
-                  </li>
+                  <span class="w-7 h-7 rounded-seal bg-primary-500 flex items-center justify-center text-xs font-medium">
+                    {{ user.first_name|slice:":1" }}{{ user.last_name|slice:":1" }}
+                  </span>
                 {% endif %}
-              </ul>
+                <span>{{ user.first_name }} ▾</span>
+              </button>
+              <div id="user-menu"
+                   data-dropdown-menu
+                   role="menu"
+                   class="dropdown-menu hidden absolute right-0 mt-2 bg-paper text-ink rounded-card shadow-card-hover w-48 py-2 z-50">
+                <a href="{% url 'users:profile' %}"
+                   role="menuitem"
+                   class="block px-4 py-2 text-sm hover:bg-primary-50 focus-visible:bg-primary-50 focus-visible:outline-none">{% translate "Mon profil" %}</a>
+                <a href="{% url 'account_logout' %}"
+                   role="menuitem"
+                   class="block px-4 py-2 text-sm hover:bg-primary-50 focus-visible:bg-primary-50 focus-visible:outline-none">{% translate "Se déconnecter" %}</a>
+              </div>
             </div>
+          {% else %}
+            <a href="{% url 'account_login' %}"
+               class="hover:text-gold transition-colors">{% translate "Connexion" %}</a>
+          {% endif %}
+        </div>
+      </div>
+    </header>
+    {% if messages %}
+      <div class="max-w-6xl mx-auto px-4 pt-4">
+        {% for message in messages %}
+          <div class="rounded-card px-4 py-3 mb-2 text-sm border-l-4 {% if message.tags == 'success' %}bg-tertiary-50 text-tertiary-600 border-tertiary-500 {% elif message.tags == 'error' %}bg-danger-50 text-danger-500 border-danger-500 {% else %}bg-info-50 text-info-500 border-info-500{% endif %}">
+            {{ message }}
           </div>
-        </nav>
+        {% endfor %}
       </div>
-      <div class="container">
-        {% if messages %}
-          {% for message in messages %}
-            <div class="alert alert-dismissible {% if message.tags %}alert-{{ message.tags }}{% endif %}">
-              {{ message }}
-              <button type="button"
-                      class="btn-close"
-                      data-bs-dismiss="alert"
-                      aria-label="Close"></button>
-            </div>
-          {% endfor %}
-        {% endif %}
-        {% block main %}
-          {% block content %}
-            <p>Use this document as a way to quick start any new project.</p>
-          {% endblock content %}
-        {% endblock main %}
-      </div>
-    {% endblock body %}
-    <!-- /container -->
-    {% block modal %}
-    {% endblock modal %}
-    {% block inline_javascript %}
-      {% comment %}
-    Script tags with only code, no src (defer by default). To run
-    with a "defer" so that you run inline code:
+    {% endif %}
+    <main class="{% block main_class %}max-w-6xl mx-auto px-4 py-6 pb-24 md:pb-6 flex-1 w-full{% endblock main_class %}">
+      {% block main %}
+        {% block content %}
+        {% endblock content %}
+      {% endblock main %}
+    </main>
+    {% include "components/footer.html" %}
+    {% include "components/nav_mobile.html" %}
+    {% include "components/toast_container.html" %}
     <script>
-      window.addEventListener('DOMContentLoaded', () => {
-        /* Run whatever you want */
+      /* dropdown menu visibility via class */
+      document.addEventListener("DOMContentLoaded", () => {
+        const style = document.createElement("style");
+        style.textContent = `.dropdown-menu.is-open { display: block !important; }
+        [data-modal] { display: none; } [data-modal].is-open { display: flex !important; }`;
+        document.head.appendChild(style);
       });
     </script>
-      {% endcomment %}
-    {% endblock inline_javascript %}
+    <script src="{% static 'js/components.js' %}"></script>
+    <script src="{% static 'js/project.js' %}"></script>
+    {% block extra_js %}
+    {% endblock extra_js %}
   </body>
 </html>

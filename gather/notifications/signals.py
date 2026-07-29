@@ -55,7 +55,7 @@ def notifier_organisateur_changement_statut(
         type_notification=type_notif,
         titre=titre,
         message=f"« {event.titre} » : {commentaire or titre}.",
-        lien=f"/events/organizer/{event.id}/",
+        lien=f"/events/organisateur/{event.id}/",
     )
 
     if nouveau_statut == Event.Statut.PUBLISHED:

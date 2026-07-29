@@ -4,7 +4,6 @@ import hashlib
 import hmac
 import json
 import logging
-from typing import TYPE_CHECKING
 
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
@@ -19,10 +18,8 @@ from django.views.decorators.http import require_http_methods
 
 from gather.inscriptions.models import Inscription
 
+from .models import Payment
 from .services import PaymentService
-
-if TYPE_CHECKING:
-    from .models import Payment
 
 logger = logging.getLogger(__name__)
 
@@ -87,6 +84,65 @@ def _verifier_signature_webhook(request: HttpRequest) -> bool:
         hashlib.sha256,
     ).hexdigest()
     return hmac.compare_digest(signature_recue, signature_attendue)
+
+
+@login_required
+@require_http_methods(["GET"])
+def verifier_statut_paiement(request: HttpRequest, inscription_id: str) -> JsonResponse:
+    """Endpoint appelé par le frontend après que l'utilisateur a confirmé
+    le paiement sur son téléphone. Vérifie le statut auprès de CamPay
+    et met à jour l'inscription / les revenus si le paiement est réussi."""
+    student = getattr(request.user, "student_profile", None)
+    if student is None:
+        return JsonResponse(
+            {"succes": False, "erreur": "Profil étudiant requis."},
+            status=403,
+        )
+
+    inscription = get_object_or_404(
+        Inscription,
+        pk=inscription_id,
+        student=student,
+    )
+
+    payment = getattr(inscription, "paiement", None)
+    if payment is None:
+        return JsonResponse(
+            {
+                "succes": False,
+                "erreur": "Aucun paiement trouvé pour cette inscription.",
+            },
+            status=404,
+        )
+
+    if payment.statut == Payment.Statut.REUSSI:
+        return JsonResponse(
+            {
+                "succes": True,
+                "statut": payment.statut,
+                "inscription_confirmee": True,
+            },
+        )
+
+    try:
+        payment = PaymentService.verifier_statut_manuellement(payment)
+    except Exception as exc:
+        logger.exception(
+            "Erreur lors de la vérification manuelle du paiement %s",
+            payment.reference_externe,
+        )
+        return JsonResponse(
+            {"succes": False, "erreur": str(exc)},
+            status=500,
+        )
+
+    return JsonResponse(
+        {
+            "succes": payment.statut == Payment.Statut.REUSSI,
+            "statut": payment.statut,
+            "inscription_confirmee": payment.statut == Payment.Statut.REUSSI,
+        },
+    )
 
 
 @csrf_exempt

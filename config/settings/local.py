@@ -6,6 +6,8 @@ from .base import env
 # GENERAL
 # ------------------------------------------------------------------------------
 # https://docs.djangoproject.com/en/dev/ref/settings/#debug
+# En local, DEBUG doit rester activé pour que Django serve les fichiers médias
+# (photos utilisateur, uploads, etc.).
 DEBUG = True
 # https://docs.djangoproject.com/en/dev/ref/settings/#secret-key
 SECRET_KEY = env("DJANGO_SECRET_KEY")

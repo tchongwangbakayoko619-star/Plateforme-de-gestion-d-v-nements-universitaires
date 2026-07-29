@@ -203,12 +203,31 @@ class EventReview(models.Model):
         ]
 
     def __str__(self) -> str:
-        return f"{self.student} — {self.event.titre} ({self.note}/5)"
+        student_name = getattr(self.student, "user", None)
+        student_label = (
+            student_name.get_full_name()
+            if student_name is not None
+            else f"Étudiant #{self.student_id}"
+        )
+        event_label = None
+        try:
+            event_label = getattr(self.event, "titre", None)
+        except Event.DoesNotExist:
+            event_label = None
+        event_label = event_label or f"Événement #{self.event_id}"
+        return f"{student_label} — {event_label} ({self.note}/5)"
 
     def clean(self) -> None:
-        if not self.event.est_termine:
-            message = _("Impossible de donner un avis sur un événement non terminé.")
-            raise ValidationError(message)
+        if self.event_id is None:
+            return
+        try:
+            if not self.event.est_termine:
+                message = _(
+                    "Impossible de donner un avis sur un événement non terminé.",
+                )
+                raise ValidationError(message)
+        except Event.DoesNotExist:
+            return
 
     @staticmethod
     def moyenne_note(event: Event) -> float | None:

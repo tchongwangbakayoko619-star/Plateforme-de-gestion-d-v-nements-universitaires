@@ -73,6 +73,7 @@ class EventService:
             titre=data["titre"],
             description=data["description"],
             categorie=data.get("categorie", Event.Categorie.AUTRE),
+            image=data.get("image"),
             lieu=data["lieu"],
             latitude=data.get("latitude"),
             longitude=data.get("longitude"),
@@ -101,6 +102,7 @@ class EventService:
             "titre",
             "description",
             "categorie",
+            "image",
             "lieu",
             "latitude",
             "longitude",
@@ -110,14 +112,47 @@ class EventService:
             "type_paiement",
             "prix",
             "devise",
+            "statut",
         ]
+
+        # Sauvegarder le nouveau statut avant de modifier
+        nouveau_statut = data.get("statut")
+        ancien_statut = event.statut
+
+        # Appliquer les modifications sur les champs (sauf statut pour l'instant)
         for champ in champs_modifiables:
-            if champ in data:
+            if champ in data and champ != "statut":
                 setattr(event, champ, data[champ])
 
         if "capacite_max" in data:
             event.places_restantes = data["capacite_max"]
 
+        # Si le statut change, gérer via la machine d'états
+        if nouveau_statut and nouveau_statut != ancien_statut:
+            if (
+                nouveau_statut == Event.Statut.PENDING
+                and ancien_statut == Event.Statut.DRAFT
+            ):
+                # Sauvegarder les modifs puis soumettre
+                event.full_clean()
+                event.save()
+                return EventService.soumettre(event, organizer)
+            if (
+                nouveau_statut == Event.Statut.DRAFT
+                and ancien_statut == Event.Statut.REVISION_REQUESTED
+            ):
+                # Retour en brouillon sans transition officielle
+                event.statut = Event.Statut.DRAFT
+                event.full_clean()
+                event.save()
+                return event
+            # Autre changement de statut non supporté
+            event.statut = ancien_statut  # restore
+            message = (
+                f"Transition non autorisée de {ancien_statut} vers {nouveau_statut}."
+            )
+            raise ValidationError(message)
+        # Mise à jour normale, sans changement de statut
         event.full_clean()
         event.save()
         return event

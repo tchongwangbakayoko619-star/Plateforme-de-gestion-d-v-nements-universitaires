@@ -2,18 +2,44 @@
 
 {% load i18n %}
 
-{% block title %}
-  {% translate "Créer un utilisateur" %}
-{% endblock title %}
+{% block title %}{% translate "Créer un utilisateur" %} — Gather Université{% endblock title %}
 {% block content %}
-  <h1>{% translate "Créer un utilisateur" %}</h1>
-  {% if form.non_field_errors %}
-    <div class="alert alert-danger">{{ form.non_field_errors }}</div>
-  {% endif %}
-  <form method="post">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit">{% translate "Créer" %}</button>
-  </form>
-  <p><a href="{% url 'users:admin_list' %}">{% translate "Retour à la liste" %}</a></p>
+  <section class="max-w-2xl mx-auto bg-paper rounded-card shadow-card p-6 md:p-8">
+    <p class="font-display text-sm uppercase tracking-wide text-gold mb-2">{% translate "Administration" %}</p>
+    <h1 class="font-display text-3xl text-primary-600">{% translate "Créer un utilisateur" %}</h1>
+    <p class="mt-2 text-sm text-ink-muted">
+      {% translate "Choisissez un rôle : les informations nécessaires s'affichent automatiquement." %}
+    </p>
+    {% if form.non_field_errors %}
+      <div class="mt-5 bg-danger-50 border-l-4 border-danger-500 rounded-card p-4 text-sm text-danger-500">
+        {{ form.non_field_errors }}
+      </div>
+    {% endif %}
+    <form method="post" class="mt-7 space-y-7">
+      {% csrf_token %}
+      {% for field in form %}
+        <div>
+          <label for="{{ field.id_for_label }}"
+                 class="block text-sm font-medium text-primary-600 mb-2">{{ field.label }}</label>
+          {{ field }}
+          {% if field.help_text %}
+            <p class="mt-1 text-xs text-ink-faint">{{ field.help_text }}</p>
+          {% endif %}
+          {% for error in field.errors %}
+            <p class="mt-1 text-xs text-danger-500">{{ error }}</p>
+          {% endfor %}
+        </div>
+      {% endfor %}
+      <div class="flex gap-3">
+        <button type="submit"
+                class="px-5 py-2.5 rounded-card bg-primary-600 text-paper text-sm font-medium hover:bg-primary-700">
+          {% translate "Créer" %}
+        </button>
+        <a href="{% url 'users:admin_list' %}"
+           class="px-5 py-2.5 rounded-card bg-paper text-primary-600 border border-primary-100 text-sm font-medium hover:bg-primary-50">
+          {% translate "Annuler" %}
+        </a>
+      </div>
+    </form>
+  </section>
 {% endblock content %}

@@ -4,6 +4,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.messages.views import SuccessMessageMixin
 from django.core.exceptions import ValidationError
 from django.db import transaction
+from django.shortcuts import get_object_or_404
 from django.shortcuts import redirect
 from django.urls import reverse
 from django.urls import reverse_lazy
@@ -14,6 +15,9 @@ from django.views.generic import ListView
 from django.views.generic import RedirectView
 from django.views.generic import TemplateView
 from django.views.generic import UpdateView
+
+# gather/users/views.py — ajoute ces vues
+from django.views.generic import View
 
 from gather.organizers.forms import OrganizerProfileForm
 from gather.students.forms import StudentProfileForm
@@ -26,6 +30,46 @@ from gather.users.tasks import importer_utilisateurs_depuis_csv
 from .forms import AdminCreateUserForm
 from .forms import AdminImportUsersCSVForm
 from .forms import UserProfileForm
+
+
+class AdminToggleActiveUserView(RoleRequiredMixin, View):
+    allowed_roles = [User.Role.ADMIN]
+
+    def post(self, request, pk):
+        user = get_object_or_404(User, pk=pk)
+        if user == request.user:
+            messages.error(
+                request,
+                _("Vous ne pouvez pas désactiver votre propre compte."),
+            )
+        else:
+            user.is_active = not user.is_active
+            user.save(update_fields=["is_active"])
+            messages.success(
+                request,
+                _("Compte activé.") if user.is_active else _("Compte désactivé."),
+            )
+        return redirect("users:admin_list")
+
+
+admin_toggle_active_view = AdminToggleActiveUserView.as_view()
+
+
+class AdminDeleteUserView(RoleRequiredMixin, View):
+    allowed_roles = [User.Role.ADMIN]
+
+    def post(self, request, pk):
+        user = get_object_or_404(User, pk=pk)
+        try:
+            UserService.supprimer_utilisateur(user, request.user)
+            messages.success(request, _("Compte supprimé."))
+        except ValidationError as exc:
+            message = exc.message if hasattr(exc, "message") else str(exc)
+            messages.error(request, message)
+        return redirect("users:admin_list")
+
+
+admin_delete_user_view = AdminDeleteUserView.as_view()
 
 
 class UserDetailView(LoginRequiredMixin, DetailView):
