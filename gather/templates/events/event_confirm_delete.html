@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+
+{% load i18n %}
+
+{% block title %}
+  {% translate "Supprimer l'événement" %}
+{% endblock title %}
+{% block content %}
+  <section class="max-w-lg mx-auto bg-paper rounded-card shadow-card p-6 md:p-8">
+    <p class="font-display text-sm uppercase tracking-wide text-danger-500 mb-2">{% translate "Action irréversible" %}</p>
+    <h1 class="font-display text-3xl text-primary-600">{% translate "Supprimer l'événement" %}</h1>
+    <p class="mt-4 text-ink-muted">
+      {% blocktranslate with titre=object.titre %}Êtes-vous sûr de vouloir supprimer « {{ titre }} » ?{% endblocktranslate %}
+    </p>
+    <form method="post" class="mt-7 flex gap-3">
+      {% csrf_token %}
+      <button type="submit"
+              class="px-5 py-2.5 rounded-card bg-danger-500 text-paper text-sm font-medium hover:bg-danger-500/90">
+        {% translate "Confirmer la suppression" %}
+      </button>
+      <a href="{% url 'events:organizer_detail' event_id=object.id %}"
+         class="px-5 py-2.5 rounded-card bg-paper text-primary-600 border border-primary-100 text-sm font-medium hover:bg-primary-50">
+        {% translate "Annuler" %}
+      </a>
+    </form>
+  </section>
+{% endblock content %}

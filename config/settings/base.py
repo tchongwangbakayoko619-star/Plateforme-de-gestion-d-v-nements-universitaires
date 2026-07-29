@@ -21,8 +21,7 @@ if READ_DOT_ENV_FILE:
 
 # GENERAL
 # ------------------------------------------------------------------------------
-DEBUG = env.bool("DJANGO_DEBUG", False)
-
+DEBUG = False
 # SECRET_KEY
 # ------------------------------------------------------------------------------
 SECRET_KEY = env("DJANGO_SECRET_KEY")
@@ -107,6 +106,8 @@ LOCAL_APPS = [
     "gather.inscriptions.apps.InscriptionsConfig",
     "gather.payments.apps.PaymentsConfig",
     "gather.notifications.apps.NotificationsConfig",
+    "gather.dashboard.apps.DashboardConfig",
+    "gather.statistic.apps.StatisticsConfig",
     # Your stuff: custom apps go here
 ]
 # https://docs.djangoproject.com/en/dev/ref/settings/#installed-apps
@@ -166,6 +167,7 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "allauth.account.middleware.AccountMiddleware",
+    "gather.contrib.middleware.ExceptionCentraliseeMiddleware",
 ]
 
 # STATIC

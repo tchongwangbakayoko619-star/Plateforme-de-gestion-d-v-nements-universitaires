@@ -6,6 +6,7 @@ from django.core.exceptions import ValidationError
 from django.http import HttpRequest
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
+from django.shortcuts import render
 from django.views.decorators.csrf import csrf_protect
 from django.views.decorators.http import require_http_methods
 
@@ -28,6 +29,16 @@ def _notification_vers_dict(notification: Notification) -> dict:
         "lu": notification.lu,
         "created_at": notification.created_at.isoformat(),
     }
+
+
+def _compter_non_lues(user) -> int:
+    return Notification.objects.filter(destinataire=user, lu=False).count()
+
+
+@login_required
+@require_http_methods(["GET"])
+def page_notifications(request: HttpRequest):
+    return render(request, "notifications/liste.html")
 
 
 @login_required
@@ -57,7 +68,13 @@ def marquer_comme_lue(request: HttpRequest, notification_id: str) -> JsonRespons
     notification = get_object_or_404(Notification, pk=notification_id)
     try:
         notification = NotificationService.marquer_comme_lue(notification, request.user)
-        return JsonResponse(_notification_vers_dict(notification), status=200)
+        return JsonResponse(
+            {
+                **_notification_vers_dict(notification),
+                "non_lues_count": _compter_non_lues(request.user),
+            },
+            status=200,
+        )
     except ValidationError as exc:
         return _erreur_json(exc, statut=403)
 
@@ -77,6 +94,9 @@ def supprimer_notification(request: HttpRequest, notification_id: str) -> JsonRe
     notification = get_object_or_404(Notification, pk=notification_id)
     try:
         NotificationService.supprimer(notification, request.user)
-        return JsonResponse({"succes": True}, status=200)
+        return JsonResponse(
+            {"succes": True, "non_lues_count": _compter_non_lues(request.user)},
+            status=200,
+        )
     except ValidationError as exc:
         return _erreur_json(exc, statut=403)

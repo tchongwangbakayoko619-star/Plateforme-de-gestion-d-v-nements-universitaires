@@ -1,0 +1,99 @@
+{# gather/templates/inscriptions/billet.html #}
+{% extends "base.html" %}
+
+{% load i18n %}
+
+{% block title %}
+  {% translate "Mon billet" %}
+{% endblock title %}
+{% block content %}
+  <div class="max-w-md mx-auto">
+    <div class="billet-imprimable bg-paper rounded-card shadow-card-hover overflow-hidden">
+      {# Bandeau supérieur #}
+      <div class="bg-primary-600 px-6 py-5 text-center relative">
+        <div class="absolute inset-0 opacity-10"
+             style="background-image: radial-gradient(circle, white 1px, transparent 1px);
+                    background-size: 16px 16px"></div>
+        <p class="relative font-display text-paper text-sm tracking-wide">GATHER UNIVERSITÉ</p>
+      </div>
+      <div class="p-6 text-center">
+        <h1 class="font-display text-xl text-primary-600 mb-1">{{ inscription.event.titre }}</h1>
+        <p class="text-sm text-ink-muted mb-5">
+          {{ inscription.event.date_debut|date:"l d F Y à H:i" }} — {{ inscription.event.lieu }}
+        </p>
+        {% if ticket %}
+          <div class="inline-block p-3 bg-paper border-2 border-primary-50 rounded-card mb-5">
+            <img src="{{ ticket.image_qr.url }}" alt="QR Code" class="w-44 h-44" />
+          </div>
+          <div class="flex items-center justify-center gap-2 mb-1">
+            {% if ticket.statut == "valide" %}
+              {% include "components/badge_seal.html" with label="Valide" tone="success" %}
+            {% elif ticket.statut == "utilise" %}
+              {% include "components/badge_seal.html" with label="Déjà utilisé" tone="gold" %}
+            {% else %}
+              {% include "components/badge_seal.html" with label="Annulé" tone="danger" %}
+            {% endif %}
+          </div>
+          <div class="border-t border-dashed border-primary-100 my-5 relative">
+            <span class="absolute -left-9 -top-2.5 w-5 h-5 rounded-full bg-paper-dim"></span>
+            <span class="absolute -right-9 -top-2.5 w-5 h-5 rounded-full bg-paper-dim"></span>
+          </div>
+          <dl class="text-left text-sm space-y-2 mb-5">
+            <div class="flex justify-between">
+              <dt class="text-ink-muted">{% translate "Participant" %}</dt>
+              <dd class="font-medium text-primary-600">
+                {{ inscription.student.user.get_full_name }}
+              </dd>
+            </div>
+            <div class="flex justify-between">
+              <dt class="text-ink-muted">{% translate "Référence" %}</dt>
+              <dd class="font-mono text-xs text-ink-faint">
+                {{ ticket.code_qr|slice:":16" }}…
+              </dd>
+            </div>
+          </dl>
+          {% with organizer=inscription.event.organizer %}
+            <div class="border-t border-primary-50 pt-4 flex items-center justify-between">
+              <div class="text-left">
+                <p class="text-xs text-ink-faint uppercase tracking-wide mb-0.5">{% translate "Organisé et validé par" %}</p>
+                <p class="text-sm font-medium text-primary-600">{{ organizer.user.get_full_name }}</p>
+                <p class="text-xs text-ink-muted">{{ organizer.club }}</p>
+              </div>
+              {% if organizer.signature_electronique %}
+                <img src="{{ organizer.signature_electronique.url }}"
+                     alt="{% translate 'Signature' %}"
+                     class="h-12 opacity-80" />
+              {% else %}
+                <div class="w-12 h-12 rounded-seal border-2 border-gold/40 flex items-center justify-center flex-shrink-0">
+                  <span class="font-display text-gold text-lg">✓</span>
+                </div>
+              {% endif %}
+            </div>
+          {% endwith %}
+        {% else %}
+          <p class="bg-info-50 text-info-500 text-sm rounded-card px-4 py-3">
+            {% translate "Billet non disponible pour le moment." %}
+          </p>
+        {% endif %}
+      </div>
+    </div>
+    <button class="no-print w-full px-5 py-2.5 rounded-card text-sm font-medium bg-primary-600 text-paper hover:bg-primary-700 mt-5"
+            onclick="window.print()">{% translate "Imprimer le billet" %}</button>
+  </div>
+  <style>
+    @media print {
+
+      .no-print,
+      nav,
+      footer,
+      header {
+        display: none !important;
+      }
+
+      .billet-imprimable {
+        box-shadow: none !important;
+        border: 1px solid #ddd;
+      }
+    }
+  </style>
+{% endblock content %}

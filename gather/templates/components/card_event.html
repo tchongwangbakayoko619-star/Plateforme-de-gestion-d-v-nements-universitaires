@@ -1,0 +1,58 @@
+{# gather/templates/components/card_event.html #}
+{% load i18n %}
+
+{% comment %}
+Usage : {% include "components/card_event.html" with event=event %}
+{% endcomment %}
+<a href="{% url 'events:detail' event_id=event.id %}"
+   class="group block bg-paper rounded-card shadow-card hover:shadow-card-hover transition-all duration-200 overflow-hidden border border-primary-50 hover:-translate-y-0.5">
+  <div class="relative aspect-[16/10] overflow-hidden bg-primary-50">
+    {% if event.image %}
+      <img src="{{ event.image.url }}"
+           alt=""
+           class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+    {% else %}
+      <div class="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary-100 to-primary-50">
+        <span class="font-display text-4xl text-primary-300">{{ event.titre|slice:":1" }}</span>
+      </div>
+    {% endif %}
+    {# Date badge, coin supérieur gauche #}
+    <div class="absolute top-3 left-3 bg-paper rounded-card shadow-card px-2.5 py-1.5 text-center leading-none">
+      <div class="text-[10px] uppercase tracking-wide text-danger-500 font-medium">{{ event.date_debut|date:"M" }}</div>
+      <div class="font-display text-lg text-primary-600">{{ event.date_debut|date:"d" }}</div>
+    </div>
+    {# Tarif, coin supérieur droit #}
+    <div class="absolute top-3 right-3">
+      {% if event.type_paiement == "gratuit" %}
+        {% include "components/badge_seal.html" with label="Gratuit" tone="success" %}
+      {% else %}
+        {% include "components/badge_seal.html" with label=event.prix|floatformat:0|add:" XAF" tone="gold" %}
+      {% endif %}
+    </div>
+  </div>
+  <div class="p-4">
+    <p class="text-xs font-medium uppercase tracking-wide text-tertiary-600 mb-1.5">{{ event.get_categorie_display }}</p>
+    <h3 class="font-display text-lg text-primary-600 mb-1.5 leading-snug line-clamp-2">{{ event.titre }}</h3>
+    <p class="text-sm text-ink-muted flex items-center gap-1.5 mb-3">
+      <svg viewBox="0 0 24 24"
+           fill="none"
+           class="w-3.5 h-3.5 flex-shrink-0"
+           stroke="currentColor"
+           stroke-width="1.6">
+        <path d="M12 21s-7-6.1-7-11a7 7 0 1 1 14 0c0 4.9-7 11-7 11Z" />
+        <circle cx="12" cy="10" r="2.3" />
+      </svg>
+      <span class="truncate">{{ event.lieu }}</span>
+    </p>
+    <div class="flex items-center justify-between text-xs text-ink-faint pt-3 border-t border-primary-50">
+      <span>{{ event.date_debut|date:"H:i" }}</span>
+      <span class="flex items-center gap-1">
+        {% if event.places_restantes <= 0 %}
+          <span class="text-danger-500 font-medium">{% translate "Complet" %}</span>
+        {% else %}
+          {{ event.places_restantes }} {% translate "places" %}
+        {% endif %}
+      </span>
+    </div>
+  </div>
+</a>

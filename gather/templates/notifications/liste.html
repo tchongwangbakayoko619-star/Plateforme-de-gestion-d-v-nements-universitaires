@@ -1,0 +1,240 @@
+{# gather/templates/notifications/liste.html #}
+{% extends "base.html" %}
+
+{% load i18n %}
+
+{% block title %}
+  {% translate "Notifications" %}
+{% endblock title %}
+{% block content %}
+  <div class="flex items-center justify-between mb-6">
+    <h1 class="font-display text-2xl text-primary-600">{% translate "Notifications" %}</h1>
+    <button id="btn-tout-lire"
+            class="text-sm font-medium text-primary-600 hover:underline">
+      {% translate "Tout marquer comme lu" %}
+    </button>
+  </div>
+  <div id="liste-notifications"
+       class="bg-paper rounded-card shadow-card overflow-hidden divide-y divide-primary-50">
+    <div class="p-5 space-y-3">
+      <div class="skeleton h-16"></div>
+      <div class="skeleton h-16"></div>
+      <div class="skeleton h-16"></div>
+    </div>
+  </div>
+{% endblock content %}
+{% block extra_js %}
+  <script>
+    function getCookie(name) {
+      const value = `; ${document.cookie}`;
+      const parts = value.split(`; ${name}=`);
+      if (parts.length === 2) return parts.pop().split(";").shift();
+    }
+
+    async function marquerNotificationCommeLue(notificationId) {
+      const response = await fetch(`/notifications/${notificationId}/lue/`, {
+        method: "POST",
+        headers: {
+          "X-CSRFToken": getCookie("csrftoken"),
+          "ngrok-skip-browser-warning": "true",
+        },
+      });
+      if (!response.ok) {
+        return null;
+      }
+      return response.json();
+    }
+
+    function normaliserLien(lien) {
+      return lien?.replace(/\/events\/organizer\//g, "/events/organisateur/");
+    }
+
+    function templateNotification(n) {
+      const lien = normaliserLien(n.lien);
+      return `
+    <div class="flex items-start gap-3 px-5 py-4 transition-colors ${n.lu ? "" : "bg-primary-50/40"}" data-id="${n.id}" data-lu="${n.lu}">
+      <span class="w-2 h-2 rounded-full mt-1.5 flex-shrink-0 ${n.lu ? "bg-transparent" : "bg-gold"}"></span>
+      <div class="flex-1 min-w-0">
+        <p class="text-sm font-medium text-primary-600">${n.titre}</p>
+        <p class="text-sm text-ink-muted mt-0.5">${n.message}</p>
+        <p class="text-xs text-ink-faint mt-1 font-mono">${new Date(n.created_at).toLocaleString("fr-FR")}</p>
+      </div>
+      <div class="flex items-center gap-2 flex-shrink-0">
+        ${lien ? `<a href="${lien}" data-view-notification="${n.id}" class="text-xs font-medium text-tertiary-600 hover:underline whitespace-nowrap">{% translate "Voir" %}</a>` : ""}
+        <button type="button" data-action="supprimer" data-id="${n.id}" class="text-xs font-medium text-danger-500 hover:text-danger-600 whitespace-nowrap">
+          {% translate "Supprimer" %}
+        </button>
+      </div>
+    </div>`;
+    }
+
+    async function chargerNotifications() {
+      const conteneur = document.getElementById("liste-notifications");
+
+      try {
+        const reponse = await fetch("{% url 'notifications:liste_api' %}", {
+          headers: {
+            "ngrok-skip-browser-warning": "true"
+          },
+        });
+
+        if (!reponse.ok) {
+          throw new Error(`Erreur ${reponse.status}`);
+        }
+
+        const data = await reponse.json();
+
+        if (!Array.isArray(data.resultats) || data.resultats.length === 0) {
+          conteneur.innerHTML = `
+        <div class="text-center py-16">
+          <div class="w-14 h-14 rounded-seal border-2 border-primary-100 mx-auto mb-4 flex items-center justify-center">
+            <span class="text-2xl text-primary-300">◔</span>
+          </div>
+          <p class="text-ink-muted text-sm">{% translate "Aucune notification pour le moment." %}</p>
+        </div>`;
+          window.dispatchEvent(new CustomEvent("gather:notifications-updated", {
+            detail: {
+              count: data.non_lues_count || 0
+            }
+          }));
+          return;
+        }
+
+        conteneur.innerHTML = data.resultats.map(templateNotification).join("");
+        window.dispatchEvent(new CustomEvent("gather:notifications-updated", {
+          detail: {
+            count: data.non_lues_count || 0
+          }
+        }));
+      } catch (error) {
+        conteneur.innerHTML = `
+      <div class="text-center py-16 text-danger-600">
+        <p class="text-sm font-medium">{% translate "Impossible de charger les notifications." %}</p>
+        <p class="text-sm text-ink-muted mt-2">${error.message}</p>
+      </div>`;
+        console.error("Erreur de chargement des notifications :", error);
+      }
+    }
+
+    function ajouterNotificationEnDirect(notification) {
+      const conteneur = document.getElementById("liste-notifications");
+      // Si la liste était vide, on repart d'un rendu propre
+      if (!conteneur.querySelector("[data-id]")) {
+        conteneur.innerHTML = "";
+      }
+      conteneur.insertAdjacentHTML("afterbegin", templateNotification(notification));
+      window.dispatchEvent(new CustomEvent("gather:notification", {
+        detail: notification
+      }));
+    }
+
+    document.getElementById("btn-tout-lire").addEventListener("click", async () => {
+      const response = await fetch("{% url 'notifications:marquer_toutes_lues' %}", {
+        method: "POST",
+        headers: {
+          "X-CSRFToken": getCookie("csrftoken"),
+          "ngrok-skip-browser-warning": "true",
+        },
+      });
+
+      if (response.ok) {
+        window.dispatchEvent(new CustomEvent("gather:notifications-updated", {
+          detail: {
+            count: 0
+          }
+        }));
+      }
+      chargerNotifications();
+    });
+
+    document.getElementById("liste-notifications").addEventListener("click", async (event) => {
+      const bouton = event.target.closest("button[data-action='supprimer']");
+      if (!bouton) {
+        return;
+      }
+
+      const notificationId = bouton.dataset.id;
+      if (!notificationId) {
+        return;
+      }
+
+      if (!confirm("{% translate "Voulez-vous vraiment supprimer cette notification ?" %}")) {
+        return;
+      }
+
+      const ligne = bouton.closest("[data-id]");
+
+      try {
+        const reponse = await fetch(`/notifications/${notificationId}/supprimer/`, {
+          method: "DELETE",
+          headers: {
+            "X-CSRFToken": getCookie("csrftoken"),
+            "ngrok-skip-browser-warning": "true",
+          },
+        });
+
+        if (!reponse.ok) {
+          throw new Error(`Erreur ${reponse.status}`);
+        }
+
+        const data = await reponse.json();
+        if (ligne) {
+          ligne.remove();
+        }
+        window.dispatchEvent(new CustomEvent("gather:notifications-updated", {
+          detail: {
+            count: data.non_lues_count ?? 0
+          }
+        }));
+        await chargerNotifications();
+      } catch (error) {
+        console.error("Impossible de supprimer la notification :", error);
+        alert("{% translate "Impossible de supprimer la notification." %}");
+      }
+    });
+
+    document.getElementById("liste-notifications").addEventListener("click", async (event) => {
+      const lien = event.target.closest("a[data-view-notification]");
+      if (!lien) {
+        return;
+      }
+
+      event.preventDefault();
+      const notificationId = lien.dataset.viewNotification;
+      const href = lien.href;
+      const ligne = lien.closest("[data-id]");
+      const estLue = ligne?.dataset.lu === "false";
+
+      try {
+        const data = await marquerNotificationCommeLue(notificationId);
+        if (data?.non_lues_count != null) {
+          if (ligne) {
+            ligne.dataset.lu = "true";
+          }
+          window.dispatchEvent(new CustomEvent("gather:notifications-updated", {
+            detail: {
+              count: data.non_lues_count
+            }
+          }));
+          await chargerNotifications();
+        }
+      } catch (error) {
+        console.warn("Impossible de marquer la notification comme lue :", error);
+      }
+
+      window.location.href = href;
+    });
+
+    chargerNotifications();
+
+    // Branchement sur le WebSocket déjà connecté (components.js) : on écoute
+    // le même canal pour insérer la notification en direct dans la liste,
+    // sans attendre un rechargement de page.
+    const protocoleWs = window.location.protocol === "https:" ? "wss:" : "ws:";
+    const socketNotifs = new WebSocket(`${protocoleWs}//${window.location.host}/ws/notifications/`);
+    socketNotifs.onmessage = (event) => {
+      const notification = JSON.parse(event.data);
+      ajouterNotificationEnDirect(notification);
+    };
+  </script>
+{% endblock extra_js %}

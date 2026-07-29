@@ -1,0 +1,127 @@
+@import "tailwindcss";
+
+@theme {
+  /* Couleurs — justifiées dans le design system */
+  --color-primary-50: #eef1f6;
+  --color-primary-100: #d3dbe8;
+  --color-primary-300: #7086ab;
+  --color-primary-500: #2f4570;
+  --color-primary-600: #1B2A4A;
+  --color-primary-700: #142038;
+  --color-primary-900: #0c1425;
+
+  --color-paper: #FAFAF8;
+  --color-paper-dim: #F1F0EA;
+
+  --color-tertiary-50: #e7f4f0;
+  --color-tertiary-500: #0F6E56;
+  --color-tertiary-600: #0c5945;
+
+  --color-gold: #C9A227;
+  --color-gold-dim: #E9D9A8;
+
+  --color-danger-500: #993C1D;
+  --color-danger-50: #FBEAE5;
+  --color-info-500: #2F5C8A;
+  --color-info-50: #EAF1FB;
+
+  --color-ink: #1B2A4A;
+  --color-ink-muted: #5A5F66;
+  --color-ink-faint: #6B7280;  /* contraste AA renforcé sur fond paper */
+
+  /* Typographie */
+  --font-display: "Fraunces", ui-serif, Georgia, serif;
+  --font-body: "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, monospace;
+
+  /* Rayons — arrondi doux, cohérent avec le sceau signature */
+  --radius-seal: 999px;
+  --radius-card: 0.75rem;
+
+  /* Ombres — stratifiées, plus douces qu'une ombre plate unique */
+  --shadow-card: 0 1px 2px rgba(27,42,74,0.04), 0 4px 16px rgba(27,42,74,0.06);
+  --shadow-card-hover: 0 4px 8px rgba(27,42,74,0.06), 0 16px 32px rgba(27,42,74,0.12);
+  --shadow-glow-gold: 0 0 0 1px rgba(201,162,39,0.15), 0 4px 20px rgba(201,162,39,0.15);
+}
+
+@layer base {
+  body {
+    font-family: var(--font-body);
+    color: var(--color-ink);
+    background-color: var(--color-paper-dim);
+  }
+  h1, h2, h3, .font-display {
+    font-family: var(--font-display);
+  }
+
+  /* Header en verre dépoli au scroll (glassmorphism léger) */
+  .header-glass {
+    backdrop-filter: blur(12px);
+    background: color-mix(in oklab, var(--color-primary-600) 88%, transparent);
+  }
+
+  /* Transition douce par défaut sur tout élément interactif */
+  a, button {
+    transition: all 180ms cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  /* Respecte reduced motion */
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}
+
+@layer components {
+  input[type="text"],
+  input[type="email"],
+  input[type="number"],
+  input[type="date"],
+  input[type="datetime-local"],
+  input[type="tel"],
+  input[type="search"],
+  textarea,
+  select {
+    @apply w-full rounded-card border border-primary-100 px-3.5 py-2.5 text-sm text-ink;
+    @apply focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent;
+  }
+  textarea {
+    @apply min-h-[100px];
+  }
+  input[type="checkbox"] {
+    @apply w-4 h-4 rounded border-primary-100 text-primary-600 focus:ring-primary-500;
+  }
+
+  input[type="file"] {
+    @apply w-full text-sm text-ink-muted;
+  }
+  input[type="file"]::file-selector-button {
+    @apply mr-3 px-4 py-2 rounded-card text-sm font-medium bg-primary-50 text-primary-600 border-0 hover:bg-primary-100 cursor-pointer;
+  }
+
+  /* Cartes avec micro-élévation au survol */
+  .card-lift {
+    @apply transition-all duration-300 ease-out;
+  }
+  .card-lift:hover {
+    transform: translateY(-3px);
+  }
+
+  /* Skeleton loading (listes qui chargent en JS) */
+  .skeleton {
+    @apply bg-primary-50 rounded-card relative overflow-hidden;
+  }
+  .skeleton::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.5), transparent);
+    animation: shimmer 1.5s infinite;
+  }
+  @keyframes shimmer {
+    from { transform: translateX(-100%); }
+    to { transform: translateX(100%); }
+  }
+}

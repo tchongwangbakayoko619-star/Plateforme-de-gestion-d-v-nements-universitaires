@@ -6,6 +6,7 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 
 from gather.events.models import Event
+from gather.events.signals import StatusChangeContext
 from gather.events.signals import event_status_changed
 from gather.inscriptions.models import Inscription
 from gather.payments.models import Payment
@@ -17,15 +18,14 @@ logger = logging.getLogger(__name__)
 
 
 @receiver(event_status_changed)
-def notifier_organisateur_changement_statut(  # noqa: PLR0913
+def notifier_organisateur_changement_statut(
     sender,
-    event,
-    ancien_statut,
-    nouveau_statut,
-    utilisateur=None,
-    commentaire="",
+    context: StatusChangeContext,
     **kwargs,
 ):
+    event = context.event
+    nouveau_statut = context.nouveau_statut
+    commentaire = context.commentaire
     mapping_types = {
         Event.Statut.PUBLISHED: (
             Notification.Type.EVENT_PUBLIE,
@@ -55,7 +55,7 @@ def notifier_organisateur_changement_statut(  # noqa: PLR0913
         type_notification=type_notif,
         titre=titre,
         message=f"« {event.titre} » : {commentaire or titre}.",
-        lien=f"/events/organizer/{event.id}/",
+        lien=f"/events/organisateur/{event.id}/",
     )
 
     if nouveau_statut == Event.Statut.PUBLISHED:

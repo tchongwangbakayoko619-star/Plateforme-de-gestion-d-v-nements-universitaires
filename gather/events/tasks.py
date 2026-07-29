@@ -104,7 +104,7 @@ def notifier_organisateur_evenement_refuse(self, event_id: int, motif: str) -> N
         return
 
     organisateur_user = event.organizer.user
-    lien = _lien_absolu(f"/events/organizer/{event.id}/")
+    lien = _lien_absolu(f"/events/organisateur/{event.id}/")
     context = {
         "event": event,
         "organisateur_first_name": organisateur_user.first_name,
@@ -151,7 +151,7 @@ def notifier_organisateur_revision_demandee(
         return
 
     organisateur_user = event.organizer.user
-    lien = _lien_absolu(f"/events/organizer/{event.id}/modifier/")
+    lien = _lien_absolu(f"/events/organisateur/{event.id}/modifier/")
     context = {
         "event": event,
         "organisateur_first_name": organisateur_user.first_name,

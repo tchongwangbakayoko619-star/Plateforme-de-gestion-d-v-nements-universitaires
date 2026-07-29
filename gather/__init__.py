@@ -1,3 +1,8 @@
+from config.celery_app import app as celery_app
+
+app = celery_app
+celery = celery_app
+
 __version__ = "0.1.0"
 __version_info__ = tuple(
     int(num) if num.isdigit() else num

@@ -1,0 +1,87 @@
+{# gather/templates/events/organizer_event_list.html #}
+{% extends "base.html" %}
+
+{% load i18n %}
+
+{% block title %}
+  {% translate "Mes événements" %}
+{% endblock title %}
+{% block content %}
+  <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between mb-8">
+    <div>
+      <p class="text-tertiary-600 text-sm font-medium uppercase tracking-wide mb-2">
+        {% translate "Gestion des événements" %}
+      </p>
+      <h1 class="font-display text-3xl text-primary-600">{% translate "Mes événements" %}</h1>
+    </div>
+    <div class="flex flex-col sm:flex-row gap-3">
+      <a href="{% url 'events:organizer_create' %}"
+         class="inline-flex items-center justify-center px-4 py-2.5 rounded-card text-sm font-medium bg-primary-600 text-paper hover:bg-primary-700">
+        {% translate "Créer un événement" %}
+      </a>
+      <a href="{% url 'inscriptions:checkin_page' %}"
+         class="inline-flex items-center justify-center px-4 py-2.5 rounded-card text-sm font-medium bg-paper text-primary-600 border border-primary-100 hover:bg-primary-50">
+        {% translate "Scanner les billets" %}
+      </a>
+    </div>
+  </div>
+  <div class="bg-paper rounded-card shadow-card overflow-hidden">
+    <table class="w-full text-sm">
+      <thead class="bg-primary-50 text-primary-600 text-left">
+        <tr>
+          <th class="px-4 py-3 font-medium">{% translate "Titre" %}</th>
+          <th class="px-4 py-3 font-medium">{% translate "Statut" %}</th>
+          <th class="px-4 py-3 font-medium">{% translate "Places" %}</th>
+          <th class="px-4 py-3 font-medium">{% translate "Date" %}</th>
+          <th class="px-4 py-3 font-medium">{% translate "Actions" %}</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for event in evenements %}
+          <tr class="border-t border-primary-50 hover:bg-primary-50/40">
+            <td class="px-4 py-3">
+              <a href="{% url 'events:organizer_detail' event_id=event.id %}"
+                 class="text-primary-600 font-medium hover:underline">{{ event.titre }}</a>
+              <p class="text-ink-muted text-xs mt-1 line-clamp-2">{{ event.lieu }}</p>
+            </td>
+            <td class="px-4 py-3">{% include "components/badge_seal.html" with label=event.get_statut_display tone="gold" %}</td>
+            <td class="px-4 py-3 font-mono text-ink-muted">{{ event.places_restantes }}/{{ event.capacite_max }}</td>
+            <td class="px-4 py-3 text-ink-muted">{{ event.date_debut|date:"d/m/Y H:i" }}</td>
+            <td class="px-4 py-3">
+              <div class="flex flex-wrap gap-2">
+                <a href="{% url 'events:organizer_detail' event_id=event.id %}"
+                   class="inline-flex items-center px-3 py-1.5 rounded-card text-xs font-medium bg-paper text-primary-600 border border-primary-100 hover:bg-primary-50 transition-colors">
+                  {% translate "Détails" %}
+                </a>
+                {% if event.statut == "draft" or event.statut == "revision_requested" %}
+                  <a href="{% url 'events:organizer_update' event_id=event.id %}"
+                     class="inline-flex items-center px-3 py-1.5 rounded-card text-xs font-medium bg-primary-50 text-primary-600 hover:bg-primary-100 transition-colors">
+                    {% translate "Modifier" %}
+                  </a>
+                {% endif %}
+                {% if event.peut_etre_supprime %}
+                  <form method="post"
+                        action="{% url 'events:organizer_delete' event_id=event.id %}"
+                        onsubmit="return confirm('{% translate "Confirmer la suppression ?" %}');"
+                        class="inline">
+                    {% csrf_token %}
+                    <button type="submit"
+                            class="inline-flex items-center px-3 py-1.5 rounded-card text-xs font-medium bg-danger-50 text-danger-500 hover:bg-danger-100 transition-colors">
+                      {% translate "Supprimer" %}
+                    </button>
+                  </form>
+                {% endif %}
+              </div>
+            </td>
+          </tr>
+        {% empty %}
+          <tr>
+            <td colspan="5" class="px-4 py-10 text-center text-ink-muted">
+              {% translate "Aucun événement trouvé. Créez votre premier événement pour commencer." %}
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+{% endblock content %}

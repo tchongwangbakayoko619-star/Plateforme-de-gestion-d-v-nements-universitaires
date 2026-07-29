@@ -18,6 +18,7 @@ class Inscription(models.Model):
     InscriptionService, jamais ici."""
 
     class Statut(models.TextChoices):
+        EN_ATTENTE_PAIEMENT = "en_attente_paiement", _("En attente de paiement")
         CONFIRMEE = "confirmee", _("Confirmée")
         ANNULEE = "annulee", _("Annulée")
 
@@ -34,7 +35,7 @@ class Inscription(models.Model):
     )
     statut = models.CharField(
         _("Statut"),
-        max_length=15,
+        max_length=25,
         choices=Statut.choices,
         default=Statut.CONFIRMEE,
         db_index=True,
@@ -52,6 +53,11 @@ class Inscription(models.Model):
                 condition=models.Q(statut="confirmee"),
                 name="inscription_active_unique_par_etudiant_et_evenement",
             ),
+            models.UniqueConstraint(
+                fields=["event", "student"],
+                condition=models.Q(statut="en_attente_paiement"),
+                name="inscription_attente_unique_par_etudiant_et_evenement",
+            ),
         ]
         indexes: ClassVar[list[models.Index]] = [
             models.Index(fields=["event", "statut"]),
@@ -63,7 +69,11 @@ class Inscription(models.Model):
 
     @property
     def est_active(self) -> bool:
-        return self.statut == self.Statut.CONFIRMEE
+        return self.statut in {self.Statut.CONFIRMEE, self.Statut.EN_ATTENTE_PAIEMENT}
+
+    @property
+    def necessite_paiement(self) -> bool:
+        return self.statut == self.Statut.EN_ATTENTE_PAIEMENT
 
 
 class Ticket(models.Model):

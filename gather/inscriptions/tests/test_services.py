@@ -71,6 +71,27 @@ def test_annulation_libere_une_place():
     assert inscription.statut == Inscription.Statut.ANNULEE
 
 
+def test_annulation_inscription_paiement_en_attente_ne_decr_en_pas_la_place():
+    event = _event_publie(
+        capacite_max=CAPACITE_INITIALE_CINQ,
+        places_restantes=CAPACITE_INITIALE_CINQ,
+        type_paiement=Event.TypePaiement.PAYANT,
+        prix=1000,
+    )
+    student = creer_student()
+    inscription = InscriptionService.s_inscrire(student, event)
+
+    assert inscription.statut == Inscription.Statut.EN_ATTENTE_PAIEMENT
+    assert event.places_restantes == CAPACITE_INITIALE_CINQ
+
+    InscriptionService.annuler_inscription(inscription, student)
+
+    event.refresh_from_db()
+    inscription.refresh_from_db()
+    assert event.places_restantes == CAPACITE_INITIALE_CINQ
+    assert inscription.statut == Inscription.Statut.ANNULEE
+
+
 def test_check_in_valide_une_seule_fois():
     event = _event_publie(
         capacite_max=CAPACITE_INITIALE_CINQ,

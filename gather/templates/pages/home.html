@@ -1,1 +1,266 @@
+{# gather/templates/pages/home.html #}
 {% extends "base.html" %}
+
+{% load static i18n %}
+
+{% block title %}Gather Université — {% translate "Vivez la vie de campus" %}{% endblock title %}
+{% block main_class %}
+{% endblock main_class %}
+{% block content %}
+  <div>
+    {# ============ HERO ============ #}
+    <section class="relative overflow-hidden">
+      <div class="absolute inset-0">
+        <img src="{% static 'images/hero-campus.jpeg' %}"
+             alt=""
+             class="w-full h-full object-cover" />
+        <div class="absolute inset-0 bg-gradient-to-t from-primary-700 via-primary-700/70 to-primary-600/40"></div>
+      </div>
+      <div class="relative max-w-6xl mx-auto px-4 pt-10 pb-20 md:pt-16 md:pb-28">
+        <img src="{% static 'images/logo.png' %}"
+             alt="Gather Université"
+             class="h-11 md:h-12 mb-10" />
+        <p class="inline-flex items-center gap-2 text-gold text-sm font-medium tracking-wide uppercase mb-4">
+          <span class="w-6 h-px bg-gold"></span>
+          {% translate "La vie de campus, organisée" %}
+        </p>
+        <h1 class="font-display text-4xl md:text-6xl text-paper max-w-2xl leading-[1.05] mb-5">
+          {% translate "Chaque événement mérite un" %}
+          <span class="italic text-gold">{% translate "sceau d'approbation" %}</span>.
+        </h1>
+        <p class="text-paper/85 text-lg max-w-xl mb-8">
+          {% translate "Conférences, ateliers, soirées de club : proposez, faites valider, et remplissez la salle — le tout depuis votre téléphone." %}
+        </p>
+        <div class="flex flex-wrap gap-3">
+          {% include "components/button.html" with label="Découvrir les événements" href_name="events:list" variant="primary" %}
+          {% include "components/button.html" with label="Se connecter" href_name="account_login" variant="secondary" %}
+        </div>
+        <div class="flex items-center gap-8 mt-12 text-paper">
+          <div>
+            <div class="font-display text-2xl">{{ stats.total_evenements|default:"120" }}+</div>
+            <div class="text-xs text-paper/70">{% translate "événements publiés" %}</div>
+          </div>
+          <div class="w-px h-8 bg-paper/20"></div>
+          <div>
+            <div class="font-display text-2xl">{{ stats.total_participants|default:"3 400" }}+</div>
+            <div class="text-xs text-paper/70">{% translate "participations" %}</div>
+          </div>
+          <div class="w-px h-8 bg-paper/20"></div>
+          <div>
+            <div class="font-display text-2xl">{{ stats.note_moyenne|default:"4.6" }}<span class="text-gold">★</span></div>
+            <div class="text-xs text-paper/70">{% translate "note moyenne" %}</div>
+          </div>
+        </div>
+        <div class="mt-12 rounded-[2rem] border border-white/20 bg-white/10 backdrop-blur-sm shadow-[0_20px_60px_rgba(0,0,0,0.22)] p-4 md:p-6">
+          <div class="grid gap-4 md:grid-cols-3">
+            <div class="rounded-2xl bg-primary-800/90 p-5 text-white shadow-lg">
+              <p class="text-[0.7rem] font-semibold uppercase tracking-[0.3em] text-gold mb-3">{% translate "Validation rapide" %}</p>
+              <p class="font-display text-lg md:text-xl leading-snug text-white">{% translate "Un workflow clair pour chaque événement" %}</p>
+            </div>
+            <div class="rounded-2xl bg-white/95 p-5 text-primary-900 shadow-lg">
+              <p class="text-[0.7rem] font-semibold uppercase tracking-[0.3em] text-tertiary-600 mb-3">{% translate "Engagement" %}</p>
+              <p class="font-display text-lg md:text-xl leading-snug text-primary-900">{% translate "Des inscriptions simples en quelques clics" %}</p>
+            </div>
+            <div class="rounded-2xl bg-gold/95 p-5 text-primary-950 shadow-lg">
+              <p class="text-[0.7rem] font-semibold uppercase tracking-[0.3em] text-primary-950/70 mb-3">{% translate "Visibilité" %}</p>
+              <p class="font-display text-lg md:text-xl leading-snug text-primary-950">{% translate "Tous les publics réunis sur une même expérience" %}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+    {# ============ COMMENT ÇA MARCHE ============ #}
+    <section class="relative max-w-6xl mx-auto px-4 py-20 md:py-28 overflow-hidden">
+      <div class="absolute inset-0 bg-[radial-gradient(#e2e8f0_1.5px,transparent_1.5px)] [background-size:24px_24px] opacity-50 pointer-events-none">
+      </div>
+      <div class="relative z-10">
+        <div class="text-center max-w-xl mx-auto mb-16">
+          <span class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-primary-50 border border-primary-100 text-tertiary-600 text-xs font-semibold uppercase tracking-[0.15em] mb-3">
+            {% translate "Le principe" %}
+          </span>
+          <h2 class="font-display text-3xl md:text-4xl text-primary-900 tracking-tight leading-tight">
+            {% translate "Trois étapes, un seul sceau" %}
+          </h2>
+        </div>
+        <div class="grid md:grid-cols-3 gap-8">
+          {# Étape 1 #}
+          <div class="group relative bg-white border border-slate-100 p-8 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.015)] hover:shadow-[0_15px_40px_rgba(0,0,0,0.05)] transition-all duration-300 hover:-translate-y-1.5 flex flex-col justify-between">
+            <div>
+              <div class="flex items-center justify-between mb-6">
+                <div class="w-12 h-12 rounded-2xl bg-primary-50 border border-primary-100/60 flex items-center justify-center text-primary-600">
+                  <svg class="w-6 h-6"
+                       fill="none"
+                       stroke="currentColor"
+                       stroke-width="1.8"
+                       viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                  </svg>
+                </div>
+                <span class="font-display text-3xl font-bold text-gold/30 group-hover:text-gold transition-colors duration-300 select-none">01</span>
+              </div>
+              <h3 class="font-display text-xl text-primary-900 mb-3 font-semibold">{% translate "L'organisateur propose" %}</h3>
+              <p class="text-sm text-slate-500 leading-relaxed font-light">
+                {% translate "Un club ou un étudiant décrit son événement : lieu, capacité, gratuit ou payant." %}
+              </p>
+            </div>
+          </div>
+          {# Étape 2 #}
+          <div class="group relative bg-white border border-slate-100 p-8 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.015)] hover:shadow-[0_15px_40px_rgba(0,0,0,0.05)] transition-all duration-300 hover:-translate-y-1.5 flex flex-col justify-between">
+            <div>
+              <div class="flex items-center justify-between mb-6">
+                <div class="w-12 h-12 rounded-2xl bg-primary-50 border border-primary-100/60 flex items-center justify-center text-primary-600">
+                  <svg class="w-6 h-6"
+                       fill="none"
+                       stroke="currentColor"
+                       stroke-width="1.8"
+                       viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                  </svg>
+                </div>
+                <span class="font-display text-3xl font-bold text-gold/30 group-hover:text-gold transition-colors duration-300 select-none">02</span>
+              </div>
+              <h3 class="font-display text-xl text-primary-900 mb-3 font-semibold">{% translate "L'administration valide" %}</h3>
+              <p class="text-sm text-slate-500 leading-relaxed font-light">
+                {% translate "Chaque événement est vérifié avant publication — la garantie d'une plateforme fiable." %}
+              </p>
+            </div>
+          </div>
+          {# Étape 3 #}
+          <div class="group relative bg-gold/5 border border-gold/20 p-8 rounded-2xl shadow-[0_8px_30px_rgba(212,163,89,0.03)] hover:shadow-[0_15px_40px_rgba(212,163,89,0.09)] transition-all duration-300 hover:-translate-y-1.5 flex flex-col justify-between">
+            <div>
+              <div class="flex items-center justify-between mb-6">
+                <div class="w-12 h-12 rounded-2xl bg-gold border border-gold/20 flex items-center justify-center text-primary-950 shadow-sm">
+                  <svg class="w-6 h-6"
+                       fill="none"
+                       stroke="currentColor"
+                       stroke-width="1.8"
+                       viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 0 0-2 2v3a2 2 0 1 1 0 4v3a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-3a2 2 0 1 1 0-4V7a2 2 0 0 0-2-2H5Z" />
+                  </svg>
+                </div>
+                <span class="font-display text-3xl font-bold text-gold/50 group-hover:text-gold transition-colors duration-300 select-none">✓</span>
+              </div>
+              <h3 class="font-display text-xl text-primary-950 mb-3 font-semibold">{% translate "L'étudiant participe" %}</h3>
+              <p class="text-sm text-slate-700 leading-relaxed font-light">
+                {% translate "Inscription, billet avec QR code, paiement Mobile Money si besoin — tout en un clic." %}
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+    {# ============ ÉVÉNEMENTS À LA UNE ============ #}
+    <section class="bg-primary-50/40 py-16 md:py-24">
+      <div class="max-w-6xl mx-auto px-4">
+        <div class="flex items-end justify-between mb-8">
+          <div>
+            <p class="text-tertiary-600 text-sm font-medium uppercase tracking-wide mb-2">{% translate "En ce moment" %}</p>
+            <h2 class="font-display text-3xl text-primary-600">{% translate "Événements à venir" %}</h2>
+          </div>
+          <a href="{% url 'events:list' %}"
+             class="text-sm font-medium text-primary-600 hover:underline hidden md:block">
+            {% translate "Tout voir" %} →
+          </a>
+        </div>
+        <div class="relative">
+          <div class="overflow-x-auto scroll-smooth rounded-[2rem] border border-primary-100 bg-white shadow-sm"
+               data-carousel="featured-events">
+            <div class="flex gap-5 px-1 py-1 snap-x snap-mandatory"
+                 data-carousel-track>
+              {% for event in evenements_a_la_une %}
+                <div class="flex-shrink-0 w-full sm:w-1/2 lg:w-1/3 snap-start"
+                     data-carousel-slide>{% include "components/card_event.html" with event=event %}</div>
+              {% empty %}
+                <div class="w-full p-10 text-center text-ink-muted">{% translate "Aucun événement publié pour le moment." %}</div>
+              {% endfor %}
+            </div>
+          </div>
+          <p class="mt-4 text-sm text-ink-muted">{% translate "Faites défiler les événements pour en voir plus." %}</p>
+        </div>
+      </div>
+    </section>
+    {# ============ AVIS TERMINÉS ============ #}
+    <section class="max-w-6xl mx-auto px-4 py-16 md:py-24">
+      <div class="flex items-center justify-between mb-8">
+        <div>
+          <p class="text-tertiary-600 text-sm font-medium uppercase tracking-wide mb-2">{% translate "Témoignages" %}</p>
+          <h2 class="font-display text-3xl text-primary-600">{% translate "Ils ont assisté à des événements terminés" %}</h2>
+          <p class="mt-3 text-sm text-ink-muted max-w-2xl">
+            {% translate "Faites défiler les avis ou laissez-les défiler automatiquement." %}
+          </p>
+        </div>
+        <a href="{% url 'events:list' %}"
+           class="text-sm font-medium text-primary-600 hover:underline hidden md:block">
+          {% translate "Voir tous les événements" %} →
+        </a>
+      </div>
+      <div class="overflow-x-auto pb-4" data-carousel="reviews">
+        <div class="flex gap-5 min-w-max snap-x snap-mandatory"
+             data-carousel-track>
+          {% for review in avis_termines %}
+            <article class="min-w-[320px] sm:min-w-[360px] bg-paper rounded-card border border-primary-100 p-6 shadow-sm snap-start transition-transform duration-300"
+                     data-carousel-slide>
+              <div class="flex items-start gap-4 mb-4">
+                <div class="h-14 w-14 rounded-full overflow-hidden bg-primary-50 flex items-center justify-center text-primary-600 text-xl font-semibold">
+                  {% if review.student.user.photo %}
+                    <img src="{{ review.student.user.photo.url }}"
+                         alt="{{ review.student.user.get_full_name }}"
+                         class="h-full w-full object-cover" />
+                  {% else %}
+                    {{ review.student.user.first_name|slice:":1" }}{{ review.student.user.last_name|slice:":1" }}
+                  {% endif %}
+                </div>
+                <div class="min-w-0">
+                  <p class="font-medium text-primary-900">{{ review.student.user.get_full_name }}</p>
+                  <p class="text-sm text-ink-muted truncate">{{ review.event.titre }}</p>
+                </div>
+              </div>
+              <div class="flex items-center gap-1 mb-4 text-gold text-sm">
+                {% for i in "12345" %}
+                  {% if forloop.counter <= review.note %}
+                    <span>★</span>
+                  {% else %}
+                    <span class="text-ink-muted">☆</span>
+                  {% endif %}
+                {% endfor %}
+              </div>
+              <p class="text-ink-muted leading-relaxed mb-4">{{ review.commentaire|default_if_none:""|truncatechars:180 }}</p>
+              <div class="flex items-center justify-between text-xs text-ink-faint">
+                <span>{{ review.created_at|date:"d/m/Y" }}</span>
+                <a href="{% url 'events:detail' event_id=review.event.id %}"
+                   class="text-tertiary-600 hover:text-tertiary-700 font-medium">
+                  {% translate "Voir l'événement" %} →
+                </a>
+              </div>
+            </article>
+          {% empty %}
+            <div class="bg-paper rounded-card p-10 text-center text-ink-muted">
+              {% translate "Aucun avis disponible pour le moment." %}
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+    </section>
+    {# ============ CTA ORGANISATEUR ============ #}
+    <section class="max-w-6xl mx-auto px-4 py-16 md:py-24">
+      <div class="bg-primary-600 rounded-card overflow-hidden grid md:grid-cols-2">
+        <div class="px-8 py-12 md:px-12 md:py-16">
+          <p class="font-display text-sm uppercase tracking-[0.18em] text-gold mb-3">{% translate "Pour les clubs" %}</p>
+          <h2 class="font-display text-3xl text-paper mb-3">{% translate "Votre club a un événement à annoncer ?" %}</h2>
+          <p class="text-paper/80 max-w-lg leading-relaxed">
+            {% translate "Contactez l'administration de l'université pour obtenir un accès organisateur. Une fois votre compte activé, vous pourrez soumettre vos événements à validation." %}
+          </p>
+        </div>
+        <div class="relative min-h-56">
+          <img src="{% static 'images/hero-campus.jpeg' %}"
+               alt="{% translate 'Étudiants réunis sur le campus' %}"
+               class="absolute inset-0 w-full h-full object-cover" />
+          <div class="absolute inset-0 bg-primary-700/45"></div>
+          <div class="absolute left-6 bottom-6 right-6 rounded-card border border-paper/25 bg-primary-900/75 p-4 text-paper backdrop-blur-sm">
+            <p class="font-display text-lg">{% translate "Un accompagnement, un événement validé." %}</p>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+{% endblock content %}

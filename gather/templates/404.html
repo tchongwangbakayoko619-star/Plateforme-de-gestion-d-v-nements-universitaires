@@ -1,13 +1,47 @@
 {% extends "base.html" %}
 
-{% block title %}Page not found{% endblock title %}
+{% load i18n %}
+
+{% block title %}404 — Gather Université{% endblock title %}
+{% block main_class %}flex items-center justify-center min-h-screen{% endblock main_class %}
 {% block content %}
-  <h1>Page not found</h1>
-  <p>
-    {% if exception %}
-      {{ exception }}
-    {% else %}
-      This is not the page you were looking for.
-    {% endif %}
-  </p>
+  <style>
+    /* Masquer la navbar, le nav mobile et le conteneur de toasts pour la page 404 */
+    header,
+    [data-mobile-nav],
+    #toast-container,
+    .dropdown-menu,
+    [data-modal] {
+      display: none !important;
+    }
+
+    /* Centrer le contenu au-dessus du footer */
+    main {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 70vh;
+    }
+
+    /* image en full-bleed */
+    .full-bleed {
+      width: 100vw !important;
+      max-width: none !important;
+      height: auto !important;
+      display: block;
+      margin: 0;
+    }
+
+    /* retirer les marges latérales héritées */
+    .full-bleed-container {
+      width: 100%;
+      padding: 0;
+      margin: 0;
+    }
+  </style>
+  <div class="full-bleed-container flex items-center justify-center">
+    <img class="full-bleed"
+         src="https://i.pinimg.com/736x/3f/aa/3f/3faa3fea909141f58c5f6f604bf1d74e.jpg"
+         alt="404 - Page introuvable" />
+  </div>
 {% endblock content %}

@@ -11,5 +11,10 @@ urlpatterns = [
         views.initier_paiement,
         name="initier",
     ),
+    path(
+        "<uuid:inscription_id>/verifier/",
+        views.verifier_statut_paiement,
+        name="verifier_statut",
+    ),
     path("webhook/campay/", views.webhook_campay, name="webhook_campay"),
 ]
