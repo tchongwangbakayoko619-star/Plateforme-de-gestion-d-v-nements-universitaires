@@ -464,7 +464,7 @@ erDiagram
 
 ---
 
-## 🔐 Sécurité
+## 🔐 Sécurité  GOOGLE_OAUTH2_KEY
 
 ### Mesures Implémentées
 
@@ -478,7 +478,7 @@ erDiagram
 
 ### Recommandations de Sécurité
 
-- Utiliser HTTPS en production
+- Utiliser HTTPS en production tres important
 - Changer régulièrement les secrets
 - Limiter les tentatives de connexion
 - Activer la journalisation des erreurs

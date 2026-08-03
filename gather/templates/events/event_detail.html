@@ -1,0 +1,184 @@
+{# gather/templates/events/event_detail.html #}
+{% extends "base.html" %}
+
+{% load i18n %}
+
+{% block title %}{{ event.titre }} — Gather Université{% endblock title %}
+{% block main_class %}
+{% endblock main_class %}
+{% block content %}
+  {# ============ EN-TÊTE ÉVÉNEMENT ============ #}
+  <section class="relative">
+    <div class="h-56 md:h-72 overflow-hidden">
+      {% if event.image %}
+        <img src="{{ event.image.url }}" alt="" class="w-full h-full object-cover" />
+      {% else %}
+        <div class="w-full h-full bg-primary-600"></div>
+      {% endif %}
+      <div class="absolute inset-0 bg-gradient-to-t from-primary-700/90 to-transparent"></div>
+    </div>
+    <div class="max-w-6xl mx-auto px-4">
+      <div class="relative -mt-16 bg-paper rounded-card shadow-card-hover p-6 md:p-8">
+        <div class="flex flex-wrap items-center gap-2 mb-3">
+          {% include "components/badge_seal.html" with label=event.get_categorie_display tone="gold" %}
+          {% if event.type_paiement == "gratuit" %}
+            {% include "components/badge_seal.html" with label="Gratuit" tone="success" %}
+          {% else %}
+            {% include "components/badge_seal.html" with label=event.prix|stringformat:"s"|add:" XAF" tone="info" %}
+          {% endif %}
+        </div>
+        <h1 class="font-display text-2xl md:text-3xl text-primary-600 mb-3">{{ event.titre }}</h1>
+        <div class="flex flex-wrap gap-x-6 gap-y-2 text-sm text-ink-muted mb-5">
+          <span class="inline-flex items-center gap-1.5">
+            <svg viewBox="0 0 24 24"
+                 fill="none"
+                 class="w-4 h-4"
+                 stroke="currentColor"
+                 stroke-width="1.6">
+              <rect x="3" y="5" width="18" height="16" rx="2" />
+              <path d="M8 3v4M16 3v4M3 10h18" />
+            </svg>
+            {{ event.date_debut|date:"l d F Y, H:i" }}
+          </span>
+          <span class="inline-flex items-center gap-1.5">
+            <svg viewBox="0 0 24 24"
+                 fill="none"
+                 class="w-4 h-4"
+                 stroke="currentColor"
+                 stroke-width="1.6">
+              <path d="M12 21s-7-6.1-7-11a7 7 0 1 1 14 0c0 4.9-7 11-7 11Z" />
+              <circle cx="12" cy="10" r="2.3" />
+            </svg>
+            {{ event.lieu }}
+          </span>
+          <span class="inline-flex items-center gap-1.5">
+            <svg viewBox="0 0 24 24"
+                 fill="none"
+                 class="w-4 h-4"
+                 stroke="currentColor"
+                 stroke-width="1.6">
+              <circle cx="12" cy="12" r="9" />
+              <path d="M12 7v5l3 2" />
+            </svg>
+            {{ event.places_restantes }} {% translate "places restantes" %} / {{ event.capacite_max }}
+          </span>
+          {% if stats.nombre_avis > 0 %}
+            <span class="inline-flex items-center gap-1.5">
+              <span class="text-gold">★</span> {{ stats.moyenne|floatformat:1 }} ({{ stats.nombre_avis }})
+            </span>
+          {% endif %}
+        </div>
+        {# ============ ACTION PRINCIPALE ============ #}
+        {% if mon_inscription %}
+          {% if mon_inscription.necessite_paiement %}
+            <div class="bg-warning-50 border-l-4 border-warning-500 rounded-card px-4 py-3">
+              <div class="space-y-2">
+                <p class="text-warning-600 text-sm font-medium">{% translate "Votre inscription est enregistrée, mais elle ne sera confirmée qu'après le paiement." %}</p>
+                <p class="text-warning-600 text-sm">{% translate "Vous devez payer immédiatement pour sécuriser votre place." %}</p>
+              </div>
+              <div class="mt-3">
+                <form id="form-paiement-{{ mon_inscription.id }}"
+                      class="flex flex-col sm:flex-row gap-2">
+                  {% csrf_token %}
+                  <input type="tel"
+                         name="telephone"
+                         required
+                         placeholder="{% translate 'Numéro Mobile Money (ex: 690000000)' %}"
+                         class="flex-1 rounded-card border border-primary-100 bg-paper px-3.5 py-2.5 text-sm text-ink placeholder:text-ink-muted focus:outline-none focus:ring-2 focus:ring-primary-500/30 focus:border-primary-500" />
+                  <button type="button"
+                          onclick="initierPaiement('{{ mon_inscription.id }}')"
+                          class="inline-flex items-center gap-2 px-5 py-2.5 rounded-card text-sm font-medium bg-primary-600 text-paper hover:bg-primary-700 whitespace-nowrap">
+                    {% translate "Payer" %} {{ event.prix }} {{ event.devise }}
+                  </button>
+                </form>
+                <form method="post"
+                      action="{% url 'inscriptions:annuler' inscription_id=mon_inscription.id %}"
+                      class="mt-2">
+                  {% csrf_token %}
+                  <button type="submit" class="text-sm text-danger-500 hover:underline">{% translate "Annuler l'inscription" %}</button>
+                </form>
+              </div>
+            </div>
+          {% else %}
+            <div class="flex items-center gap-3 bg-tertiary-50 border-l-4 border-tertiary-500 rounded-card px-4 py-3">
+              <span class="text-tertiary-600 text-sm font-medium">{% translate "Vous êtes inscrit à cet événement." %}</span>
+              {% if mon_inscription.ticket %}
+                <a href="{% url 'inscriptions:billet' inscription_id=mon_inscription.id %}"
+                   class="inline-flex items-center gap-2 px-5 py-2.5 rounded-card text-sm font-medium bg-primary-600 text-paper hover:bg-primary-700">
+                  {% translate "Voir mon billet" %}
+                </a>
+              {% endif %}
+            </div>
+          {% endif %}
+        {% elif event.places_restantes <= 0 %}
+          {% include "components/badge_seal.html" with label="Complet" tone="danger" %}
+        {% elif user.is_authenticated and user.is_etudiant %}
+          <form method="post"
+                action="{% url 'inscriptions:inscrire' event_id=event.id %}">
+            {% csrf_token %}
+            {% include "components/button.html" with label="S'inscrire à cet événement" variant="primary" type="submit" %}
+          </form>
+        {% elif user.is_authenticated %}
+          <p class="text-sm text-ink-muted">{% translate "Seuls les comptes étudiants peuvent s'inscrire aux événements." %}</p>
+        {% else %}
+          <a href="{% url 'account_login' %}"
+             class="inline-flex items-center gap-2 px-5 py-2.5 rounded-card text-sm font-medium bg-primary-600 text-paper hover:bg-primary-700">
+            {% translate "Se connecter pour s'inscrire" %}
+          </a>
+        {% endif %}
+      </div>
+    </div>
+  </section>
+  {# ============ CORPS : DESCRIPTION + AVIS ============ #}
+  <div class="max-w-6xl mx-auto px-4 py-10 grid md:grid-cols-3 gap-8">
+    <div class="md:col-span-2">
+      <h2 class="font-display text-xl text-primary-600 mb-3">{% translate "À propos" %}</h2>
+      <p class="text-ink-muted leading-relaxed whitespace-pre-line mb-10">{{ event.description }}</p>
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="font-display text-xl text-primary-600">{% translate "Avis" %} ({{ stats.nombre_avis }})</h2>
+        {% if mon_inscription and mon_inscription.statut == "confirmee" and not mon_avis and event.est_termine %}
+          <a href="{% url 'events:review_create' event_id=event.id %}"
+             class="inline-flex items-center gap-2 px-5 py-2.5 rounded-card text-sm font-medium bg-paper text-primary-600 border border-primary-100 hover:bg-primary-50">
+            {% translate "Laisser un avis" %}
+          </a>
+        {% endif %}
+      </div>
+      {% for review in avis %}
+        <div class="border-b border-primary-50 py-4 {% if forloop.first %}border-t{% endif %}">
+          <div class="flex items-center justify-between mb-1.5">
+            <span class="font-medium text-primary-600 text-sm">{{ review.student.user.get_full_name }}</span>
+            <span class="text-gold text-sm">
+              {% for i in "12345" %}{% if forloop.counter <= review.note %}★{% else %}☆{% endif %}{% endfor %}
+            </span>
+          </div>
+          <p class="text-sm text-ink-muted">{{ review.commentaire }}</p>
+        </div>
+      {% empty %}
+        <p class="text-ink-muted text-sm py-6">{% translate "Aucun avis pour le moment — soyez le premier à en laisser un après l'événement." %}</p>
+      {% endfor %}
+    </div>
+    {# ============ SIDEBAR : ORGANISATEUR ============ #}
+    <aside>
+      <div class="bg-paper rounded-card shadow-card p-5 sticky top-4">
+        <h3 class="font-display text-sm uppercase tracking-wide text-gold mb-3">{% translate "Organisé par" %}</h3>
+        <p class="font-medium text-primary-600">{{ event.organizer.club }}</p>
+        <p class="text-sm text-ink-muted mt-1">{{ event.organizer.user.get_full_name }}</p>
+        {% if stats.repartition_notes %}
+          <div class="mt-6 pt-5 border-t border-primary-50">
+            <h3 class="font-display text-sm uppercase tracking-wide text-gold mb-3">{% translate "Répartition des notes" %}</h3>
+            {% for note, total in stats.repartition_notes.items reversed %}
+              <div class="flex items-center gap-2 text-xs text-ink-muted mb-1.5">
+                <span class="w-3">{{ note }}</span>
+                <div class="flex-1 h-1.5 bg-primary-50 rounded-full overflow-hidden">
+                  <div class="h-full bg-gold"
+                       style="width: {% widthratio total stats.nombre_avis|default:1 100 %}%"></div>
+                </div>
+                <span class="w-5 text-right">{{ total }}</span>
+              </div>
+            {% endfor %}
+          </div>
+        {% endif %}
+      </div>
+    </aside>
+  </div>
+{% endblock content %}

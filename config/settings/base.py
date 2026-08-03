@@ -21,8 +21,7 @@ if READ_DOT_ENV_FILE:
 
 # GENERAL
 # ------------------------------------------------------------------------------
-DEBUG = env.bool("DJANGO_DEBUG", False)
-
+DEBUG = False
 # SECRET_KEY
 # ------------------------------------------------------------------------------
 SECRET_KEY = env("DJANGO_SECRET_KEY")
@@ -75,6 +74,7 @@ WSGI_APPLICATION = "config.wsgi.application"
 # APPS
 # ------------------------------------------------------------------------------
 DJANGO_APPS = [
+    "daphne",
     "django.contrib.auth",
     "django.contrib.contenttypes",
     "django.contrib.sessions",
@@ -95,12 +95,19 @@ THIRD_PARTY_APPS = [
     "allauth.socialaccount.providers.google",
     "allauth.socialaccount.providers.github",
     "django_celery_beat",
+    "channels",
 ]
 
 LOCAL_APPS = [
     "gather.users",
     "gather.students.apps.StudentsConfig",
     "gather.organizers.apps.OrganizersConfig",
+    "gather.events.apps.EventsConfig",
+    "gather.inscriptions.apps.InscriptionsConfig",
+    "gather.payments.apps.PaymentsConfig",
+    "gather.notifications.apps.NotificationsConfig",
+    "gather.dashboard.apps.DashboardConfig",
+    "gather.statistic.apps.StatisticsConfig",
     # Your stuff: custom apps go here
 ]
 # https://docs.djangoproject.com/en/dev/ref/settings/#installed-apps
@@ -160,6 +167,7 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "allauth.account.middleware.AccountMiddleware",
+    "gather.contrib.middleware.ExceptionCentraliseeMiddleware",
 ]
 
 # STATIC
@@ -256,6 +264,13 @@ DEFAULT_FROM_EMAIL = env(
     "DJANGO_DEFAULT_FROM_EMAIL",
     default="Gather Université <noreply@eventhub-universite.com>",
 )
+
+# CAMPAY
+# ------------------------------------------------------------------------------
+CAMPAY_APP_USERNAME = env("CAMPAY_APP_USERNAME")
+CAMPAY_APP_PASSWORD = env("CAMPAY_APP_PASSWORD")
+CAMPAY_BASE_URL = env("CAMPAY_BASE_URL", default="https://demo.campay.net/api")
+CAMPAY_WEBHOOK_SECRET = env("CAMPAY_WEBHOOK_SECRET", default="")
 # ADMIN
 # ------------------------------------------------------------------------------
 # Django Admin URL.
@@ -292,6 +307,18 @@ LOGGING = {
 }
 
 REDIS_URL = env("REDIS_URL", default="redis://redis:6379/0")
+# Django Channels — WebSockets
+# ------------------------------------------------------------------------------
+ASGI_APPLICATION = "config.asgi.application"
+
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+            "hosts": [REDIS_URL],
+        },
+    },
+}
 REDIS_SSL = REDIS_URL.startswith("rediss://")
 
 # Celery

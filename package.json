@@ -1,0 +1,29 @@
+{
+  "name": "gather",
+  "version": "1.0.0",
+  "description": "[![Built with Cookiecutter Django](https://img.shields.io/badge/built%20with-Cookiecutter%20Django-ff69b4.svg?logo=cookiecutter)](https://github.com/cookiecutter/cookiecutter-django/) [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff) [![Django](https://img.shields.io/badge/Django-5.0-green.svg)](https://www.djangoproject.com/) [![Python](https://img.shields.io/badge/Python-3.12-blue.svg)](https://www.python.org/) [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15-blue.svg)](https://www.postgresql.org/) [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs",
+    "test": "tests"
+  },
+  "scripts": {
+    "build:css": "tailwindcss -i ./gather/static/css/input.css -o ./gather/static/css/tailwind.css --minify",
+    "watch:css": "tailwindcss -i ./gather/static/css/input.css -o ./gather/static/css/tailwind.css --watch"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tchongwangbakayoko619-star/Plateforme-de-gestion-d-v-nements-universitaires.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/tchongwangbakayoko619-star/Plateforme-de-gestion-d-v-nements-universitaires/issues"
+  },
+  "homepage": "https://github.com/tchongwangbakayoko619-star/Plateforme-de-gestion-d-v-nements-universitaires#readme",
+  "devDependencies": {
+    "@tailwindcss/cli": "^4.3.3",
+    "tailwindcss": "^4.3.3"
+  }
+}

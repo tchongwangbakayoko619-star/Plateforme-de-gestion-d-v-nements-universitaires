@@ -60,6 +60,19 @@ class UserProfileForm(forms.ModelForm):
             "langue",
             "fuseau_horaire",
         ]
+        widgets = {
+            "fuseau_horaire": forms.Select(attrs={"class": "w-full"}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Aide pour l'utilisateur lors du choix du fuseau
+        self.fields["fuseau_horaire"].help_text = _(
+            "Sélectionnez votre fuseau horaire pour afficher les dates/heures locales.",
+        )
+        self.fields["langue"].help_text = _(
+            "Choisissez la langue de l'interface utilisateur.",
+        )
 
 
 class AdminCreateUserForm(forms.Form):

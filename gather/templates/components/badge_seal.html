@@ -1,0 +1,10 @@
+{# gather/templates/components/badge_seal.html #}
+{% comment %}
+Badge-sceau : l'élément signature du design system. Utilisé pour tout
+statut qui porte un sens de validation (événement, billet).
+Usage : {% include "components/badge_seal.html" with label="Publié" tone="success" %}
+{% endcomment %}
+<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-seal border text-xs font-medium {% if tone == 'success' %}bg-tertiary-50 text-tertiary-600 border-tertiary-500 {% elif tone == 'danger' %}bg-danger-50 text-danger-500 border-danger-500 {% elif tone == 'gold' %}bg-gold-dim text-primary-700 border-gold {% else %}bg-info-50 text-info-500 border-info-500{% endif %}">
+  <span class="w-1.5 h-1.5 rounded-full bg-current"></span>
+  {{ label }}
+</span>

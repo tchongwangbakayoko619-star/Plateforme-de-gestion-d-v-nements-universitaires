@@ -1,3 +1,4 @@
+{# gather/templates/users/profile.html #}
 {% extends "base.html" %}
 
 {% load i18n %}
@@ -6,29 +7,84 @@
   {% translate "Mon profil" %}
 {% endblock title %}
 {% block content %}
-  <div class="row justify-content-center">
-    <div class="col-lg-8">
-      <div class="card shadow-sm">
-        <div class="card-header">
-          <h1 class="h4 mb-0">{% translate "Mon profil" %}</h1>
-        </div>
-        <div class="card-body">
-          <form method="post" enctype="multipart/form-data">
-            {% csrf_token %}
-            <div class="mb-4">
-              <h2 class="h5">{% translate "Informations générales" %}</h2>
-              {{ user_form.as_p }}
-            </div>
-            {% if profile_form %}
-              <div class="mb-4">
-                <h2 class="h5">{% translate "Informations métier" %}</h2>
-                {{ profile_form.as_p }}
-              </div>
-            {% endif %}
-            <button type="submit" class="btn btn-primary">{% translate "Enregistrer" %}</button>
-          </form>
-        </div>
+  <div class="max-w-2xl mx-auto">
+    <div class="flex items-center gap-4 mb-8">
+      <div class="relative">
+        {% if user.photo %}
+          <img src="{{ user.photo.url }}"
+               alt=""
+               class="w-16 h-16 rounded-seal object-cover border-2 border-gold" />
+        {% else %}
+          <div class="w-16 h-16 rounded-seal bg-primary-50 border-2 border-gold flex items-center justify-center">
+            <span class="font-display text-2xl text-primary-600">{{ user.first_name|slice:":1" }}{{ user.last_name|slice:":1" }}</span>
+          </div>
+        {% endif %}
+      </div>
+      <div>
+        <h1 class="font-display text-2xl text-primary-600">{{ user.get_full_name }}</h1>
+        <p class="text-sm text-ink-muted">{{ user.get_role_display }} · {{ user.email }}</p>
       </div>
     </div>
+    <form method="post" enctype="multipart/form-data">
+      {% csrf_token %}
+      {# ============ INFORMATIONS GÉNÉRALES ============ #}
+      <div class="bg-paper rounded-card shadow-card p-6 mb-6">
+        <div class="flex items-center gap-2 mb-5">
+          <span class="w-7 h-7 rounded-seal bg-primary-50 flex items-center justify-center text-primary-600 text-xs">1</span>
+          <h2 class="font-display text-lg text-primary-600">{% translate "Informations générales" %}</h2>
+        </div>
+        <div class="space-y-4">
+          {% for field in user_form %}
+            <div>
+              <label class="block text-sm font-medium text-primary-600 mb-1.5"
+                     for="{{ field.id_for_label }}">{{ field.label }}</label>
+              {{ field }}
+              {% if field.help_text %}<p class="text-xs text-ink-faint mt-1">{{ field.help_text }}</p>{% endif %}
+              {% if field.errors %}<p class="text-xs text-danger-500 mt-1">{{ field.errors|join:", " }}</p>{% endif %}
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+      {# ============ INFORMATIONS MÉTIER (étudiant / organisateur) ============ #}
+      {% if profile_form %}
+        <div class="bg-paper rounded-card shadow-card p-6 mb-6">
+          <div class="flex items-center gap-2 mb-5">
+            <span class="w-7 h-7 rounded-seal bg-tertiary-50 flex items-center justify-center text-tertiary-600 text-xs">2</span>
+            <h2 class="font-display text-lg text-primary-600">
+              {% if user.is_etudiant %}
+                {% translate "Informations académiques" %}
+              {% else %}
+                {% translate "Informations organisateur" %}
+              {% endif %}
+            </h2>
+          </div>
+          <div class="space-y-4">
+            {% for field in profile_form %}
+              <div>
+                <label class="block text-sm font-medium text-primary-600 mb-1.5"
+                       for="{{ field.id_for_label }}">{{ field.label }}</label>
+                {{ field }}
+                {% if field.help_text %}<p class="text-xs text-ink-faint mt-1">{{ field.help_text }}</p>{% endif %}
+                {% if field.errors %}<p class="text-xs text-danger-500 mt-1">{{ field.errors|join:", " }}</p>{% endif %}
+              </div>
+            {% endfor %}
+          </div>
+        </div>
+      {% endif %}
+      <div class="flex flex-wrap gap-3">
+        <button type="submit"
+                class="px-5 py-2.5 rounded-card text-sm font-medium bg-primary-600 text-paper hover:bg-primary-700">
+          {% translate "Enregistrer les modifications" %}
+        </button>
+        <a href="{% url 'dashboard:redirect' %}"
+           class="px-5 py-2.5 rounded-card text-sm font-medium bg-paper text-primary-600 border border-primary-100 hover:bg-primary-50">
+          {% translate "Annuler" %}
+        </a>
+        <a href="{% url 'account_logout' %}"
+           class="px-5 py-2.5 rounded-card text-sm font-medium bg-danger-50 text-danger-700 border border-danger-100 hover:bg-danger-100">
+          {% translate "Se déconnecter" %}
+        </a>
+      </div>
+    </form>
   </div>
 {% endblock content %}

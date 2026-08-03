@@ -1,10 +1,29 @@
-{% extends "base.html" %}
+{% load static %}
 
-{% block title %}Server Error{% endblock title %}
-{% block content %}
-  <h1>Ooops!!! 500</h1>
-  <h3>Looks like something went wrong!</h3>
-  <p>
-    We track these errors automatically, but if the problem persists feel free to contact us. In the meantime, try refreshing.
-  </p>
-{% endblock content %}
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Erreur serveur — Gather Université</title>
+    <link href="{% static 'css/tailwind.css' %}" rel="stylesheet" />
+  </head>
+  <body class="min-h-screen flex items-center justify-center bg-[#F1F0EA] font-sans">
+    <div class="text-center max-w-lg mx-auto px-4">
+      <div class="w-20 h-20 rounded-full border-2 border-[#993C1D] mx-auto mb-6 flex items-center justify-center">
+        <span class="text-3xl" style="color:#993C1D;">!</span>
+      </div>
+      <p class="font-mono text-sm tracking-widest mb-4" style="color:#C9A227;">ERREUR 500</p>
+      <h1 class="text-4xl md:text-5xl mb-4"
+          style="color:#1B2A4A;
+                 font-family: Georgia, serif">Une erreur est survenue</h1>
+      <p class="text-base leading-relaxed mb-8" style="color:#5A5F66;">
+        Le problème vient de notre côté. Réessayez dans un instant — si ça persiste, contactez-nous.
+      </p>
+      <a href="/"
+         class="inline-flex items-center gap-2 px-6 py-3 rounded-lg text-sm font-medium transition-colors"
+         style="background-color:#1B2A4A;
+                color:#FAFAF8">Retour à l'accueil</a>
+    </div>
+  </body>
+</html>

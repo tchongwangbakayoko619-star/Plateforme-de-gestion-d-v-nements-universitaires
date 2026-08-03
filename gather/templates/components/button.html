@@ -1,0 +1,17 @@
+{# gather/templates/components/button.html — version finale avec href_name #}
+{% comment %}
+Usage lien direct : {% include "components/button.html" with label="..." href=url variant="primary" %}
+Usage lien nommé : {% include "components/button.html" with label="..." href_name="events:list" variant="primary" %}
+Usage bouton submit : {% include "components/button.html" with label="..." variant="primary" type="submit" %}
+{% endcomment %}
+{% if type == "submit" %}
+  <button type="submit"
+          class="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-card text-sm font-medium transition-colors duration-150 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 {% if variant == 'secondary' %}bg-paper text-primary-600 border border-primary-100 hover:bg-primary-50 focus-visible:outline-primary-500 {% elif variant == 'ghost' %}text-primary-600 hover:bg-primary-50 focus-visible:outline-primary-500 {% elif variant == 'danger' %}bg-danger-500 text-paper hover:bg-danger-500/90 focus-visible:outline-danger-500 {% else %}bg-primary-600 text-paper hover:bg-primary-700 focus-visible:outline-primary-600{% endif %}">
+    {{ label }}
+  </button>
+{% else %}
+  <a href="{% if href_name %}{% url href_name %}{% else %}{{ href|default:'#' }}{% endif %}"
+     class="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-card text-sm font-medium transition-colors duration-150 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 {% if variant == 'secondary' %}bg-paper text-primary-600 border border-primary-100 hover:bg-primary-50 focus-visible:outline-primary-500 {% elif variant == 'ghost' %}text-primary-600 hover:bg-primary-50 focus-visible:outline-primary-500 {% elif variant == 'danger' %}bg-danger-500 text-paper hover:bg-danger-500/90 focus-visible:outline-danger-500 {% else %}bg-primary-600 text-paper hover:bg-primary-700 focus-visible:outline-primary-600{% endif %}">
+    {{ label }}
+  </a>
+{% endif %}

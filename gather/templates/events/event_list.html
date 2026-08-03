@@ -1,0 +1,66 @@
+{# gather/templates/events/event_list.html #}
+{% extends "base.html" %}
+
+{% load i18n %}
+
+{% block title %}{% translate "Événements" %} — Gather Université{% endblock title %}
+{% block content %}
+  <div class="mb-8">
+    <p class="text-tertiary-600 text-sm font-medium uppercase tracking-wide mb-2">{% translate "À l'affiche" %}</p>
+    <h1 class="font-display text-3xl md:text-4xl text-primary-600 mb-6">{% translate "Tous les événements" %}</h1>
+    <form method="get" class="flex flex-col sm:flex-row gap-3 mb-5">
+      <div class="relative flex-1">
+        <svg viewBox="0 0 24 24"
+             fill="none"
+             class="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-ink-faint"
+             stroke="currentColor"
+             stroke-width="1.8">
+          <circle cx="11" cy="11" r="7" />
+          <path d="M21 21l-4.3-4.3" />
+        </svg>
+        <input type="search"
+               name="search"
+               value="{{ search_query }}"
+               placeholder="{% translate 'Rechercher un événement, un lieu…' %}"
+               class="w-full rounded-card border border-primary-100 pl-10 pr-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500" />
+      </div>
+      <button type="submit"
+              class="px-5 py-2.5 rounded-card text-sm font-medium bg-primary-600 text-paper hover:bg-primary-700 whitespace-nowrap">
+        {% translate "Rechercher" %}
+      </button>
+    </form>
+    <div class="flex flex-wrap gap-2">
+      <a href="?{% if search_query %}search={{ search_query }}{% endif %}"
+         class="px-3.5 py-1.5 rounded-seal text-xs font-medium border transition-colors {% if not categorie_active %}bg-primary-600 text-paper border-primary-600{% else %}bg-paper text-primary-600 border-primary-100 hover:bg-primary-50{% endif %}">
+        {% translate "Toutes" %}
+      </a>
+      {% for value, label in categories %}
+        <a href="?categorie={{ value }}{% if search_query %}&search={{ search_query }}{% endif %}"
+           class="px-3.5 py-1.5 rounded-seal text-xs font-medium border transition-colors {% if categorie_active == value %}bg-primary-600 text-paper border-primary-600{% else %}bg-paper text-primary-600 border-primary-100 hover:bg-primary-50{% endif %}">
+          {{ label }}
+        </a>
+      {% endfor %}
+    </div>
+  </div>
+  <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-5 mb-10">
+    {% for event in evenements %}
+      {% include "components/card_event.html" with event=event %}
+    {% empty %}
+      <div class="col-span-full text-center py-20">
+        <div class="w-14 h-14 rounded-seal border-2 border-gold/40 mx-auto mb-4 flex items-center justify-center">
+          <svg viewBox="0 0 24 24"
+               fill="none"
+               class="w-6 h-6 text-gold"
+               stroke="currentColor"
+               stroke-width="1.6">
+            <circle cx="11" cy="11" r="7" />
+            <path d="M21 21l-4.3-4.3" />
+          </svg>
+        </div>
+        <p class="font-display text-xl text-primary-600 mb-1.5">{% translate "Aucun résultat" %}</p>
+        <p class="text-ink-muted text-sm">{% translate "Essayez une autre recherche ou catégorie." %}</p>
+      </div>
+    {% endfor %}
+  </div>
+  {% include "components/pagination.html" with page_obj=page_obj %}
+{% endblock content %}
