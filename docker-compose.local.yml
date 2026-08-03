@@ -37,7 +37,7 @@ services:
       - ./.envs/.local/.postgres
 
   redis:
-    image: docker.io/redis:8.0
+    image: docker.io/redis:8.10
     container_name: gather_local_redis
     ports:
       - "6379:6379"
