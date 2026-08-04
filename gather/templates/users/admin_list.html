@@ -1,63 +1,98 @@
+{# gather/templates/users/admin_list.html #}
 {% extends "base.html" %}
 
 {% load i18n %}
 
 {% block title %}
-  {% translate "Utilisateurs" %}
+  {% translate "Gestion des utilisateurs" %}
 {% endblock title %}
 {% block content %}
-  <h1>{% translate "Liste des utilisateurs" %}</h1>
-  <p>
-    <a href="{% url 'users:admin_create' %}">{% translate "Créer un utilisateur" %}</a>
-    |
-    <a href="{% url 'users:admin_import' %}">{% translate "Importer via CSV" %}</a>
-  </p>
-  <form method="get">
-    <input type="text"
-           name="search"
-           placeholder="{% translate 'Rechercher...' %}"
-           value="{{ request.GET.search }}" />
-    <select name="role">
-      <option value="">{% translate "Tous les rôles" %}</option>
-      <option value="etudiant">{% translate "Étudiant" %}</option>
-      <option value="organisateur">{% translate "Organisateur" %}</option>
-      <option value="admin">{% translate "Administrateur" %}</option>
-    </select>
-    <button type="submit">{% translate "Filtrer" %}</button>
-  </form>
-  <table>
-    <thead>
-      <tr>
-        <th>{% translate "Email" %}</th>
-        <th>{% translate "Nom" %}</th>
-        <th>{% translate "Rôle" %}</th>
-        <th>{% translate "Actif" %}</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for user in users %}
-        <tr>
-          <td><a href="{% url 'users:detail' user.pk %}">{{ user.email }}</a></td>
-          <td>{{ user.get_full_name }}</td>
-          <td>{{ user.get_role_display }}</td>
-          <td>{{ user.is_active|yesno:"Oui,Non" }}</td>
-        </tr>
-      {% empty %}
-        <tr>
-          <td colspan="4">{% translate "Aucun utilisateur." %}</td>
-        </tr>
-      {% endfor %}
-    </tbody>
-  </table>
-  {% if is_paginated %}
-    <div>
-      {% if page_obj.has_previous %}
-        <a href="?page={{ page_obj.previous_page_number }}">{% translate "Précédent" %}</a>
-      {% endif %}
-      <span>{{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span>
-      {% if page_obj.has_next %}
-        <a href="?page={{ page_obj.next_page_number }}">{% translate "Suivant" %}</a>
-      {% endif %}
+  <div class="flex items-center justify-between mb-6">
+    <h1 class="font-display text-2xl text-primary-600">{% translate "Utilisateurs" %}</h1>
+    <div class="flex gap-2">
+      <a href="{% url 'users:admin_create' %}"
+         class="px-4 py-2.5 rounded-card text-sm font-medium bg-primary-600 text-paper hover:bg-primary-700">
+        {% translate "Ajouter" %}
+      </a>
+      <a href="{% url 'users:admin_import' %}"
+         class="px-4 py-2.5 rounded-card text-sm font-medium bg-paper text-primary-600 border border-primary-100 hover:bg-primary-50">
+        {% translate "Importer CSV" %}
+      </a>
     </div>
-  {% endif %}
+  </div>
+  <form method="get" class="flex gap-3 mb-6">
+    <input type="search"
+           name="search"
+           value="{{ request.GET.search }}"
+           placeholder="{% translate 'Nom, email…' %}"
+           class="flex-1 rounded-card border border-primary-100 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500" />
+    <select name="role"
+            onchange="this.form.submit()"
+            class="rounded-card border border-primary-100 px-4 py-2.5 text-sm bg-paper">
+      <option value="">{% translate "Tous les rôles" %}</option>
+      <option value="etudiant"
+              {% if request.GET.role == "etudiant" %}selected{% endif %}>{% translate "Étudiant" %}</option>
+      <option value="organisateur"
+              {% if request.GET.role == "organisateur" %}selected{% endif %}>{% translate "Organisateur" %}</option>
+      <option value="admin" {% if request.GET.role == "admin" %}selected{% endif %}>{% translate "Admin" %}</option>
+    </select>
+  </form>
+  <div class="bg-paper rounded-card shadow-card overflow-hidden overflow-x-auto">
+    <table class="w-full text-sm min-w-[640px]">
+      <thead class="bg-primary-50 text-primary-600 text-left">
+        <tr>
+          <th class="px-4 py-3 font-medium">{% translate "Nom" %}</th>
+          <th class="px-4 py-3 font-medium">{% translate "Email" %}</th>
+          <th class="px-4 py-3 font-medium">{% translate "Rôle" %}</th>
+          <th class="px-4 py-3 font-medium">{% translate "Statut" %}</th>
+          <th class="px-4 py-3 font-medium text-right">{% translate "Actions" %}</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for u in users %}
+          <tr class="border-t border-primary-50 hover:bg-primary-50/40">
+            <td class="px-4 py-3 font-medium text-primary-600">{{ u.get_full_name }}</td>
+            <td class="px-4 py-3 text-ink-muted">{{ u.email }}</td>
+            <td class="px-4 py-3 text-ink-muted">{{ u.get_role_display }}</td>
+            <td class="px-4 py-3">
+              {% if u.is_active %}
+                {% include "components/badge_seal.html" with label="Actif" tone="success" %}
+              {% else %}
+                {% include "components/badge_seal.html" with label="Désactivé" tone="danger" %}
+              {% endif %}
+            </td>
+            <td class="px-4 py-3">
+              <div class="flex items-center justify-end gap-1.5">
+                <form method="post" action="{% url 'users:admin_toggle_active' pk=u.pk %}">
+                  {% csrf_token %}
+                  <button type="submit"
+                          class="px-3 py-1.5 rounded-card text-xs font-medium bg-paper text-primary-600 border border-primary-100 hover:bg-primary-50">
+                    {% if u.is_active %}
+                      {% translate "Désactiver" %}
+                    {% else %}
+                      {% translate "Activer" %}
+                    {% endif %}
+                  </button>
+                </form>
+                <form method="post"
+                      action="{% url 'users:admin_delete' pk=u.pk %}"
+                      onsubmit="return confirm('{% translate "Supprimer définitivement ce compte ?" %}');">
+                  {% csrf_token %}
+                  <button type="submit"
+                          class="px-3 py-1.5 rounded-card text-xs font-medium bg-danger-50 text-danger-500 hover:bg-danger-50/70">
+                    {% translate "Supprimer" %}
+                  </button>
+                </form>
+              </div>
+            </td>
+          </tr>
+        {% empty %}
+          <tr>
+            <td colspan="5" class="px-4 py-8 text-center text-ink-muted">{% translate "Aucun utilisateur." %}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% include "components/pagination.html" with page_obj=page_obj %}
 {% endblock content %}

@@ -1,0 +1,8 @@
+{# gather/templates/components/stat_card.html #}
+{% comment %}
+Usage : {% include "components/stat_card.html" with value=total_evenements label="Total" %}
+{% endcomment %}
+<div class="bg-paper rounded-card shadow-card p-5 border border-primary-50">
+  <div class="font-display text-3xl text-primary-600">{{ value }}</div>
+  <div class="text-sm text-ink-muted mt-1">{{ label }}</div>
+</div>

@@ -3,10 +3,9 @@ from django.utils.translation import gettext_lazy as _
 
 
 class UsersConfig(AppConfig):
+    default_auto_field = "django.db.models.BigAutoField"
     name = "gather.users"
     verbose_name = _("Users")
 
     def ready(self):
-        """
-        Override this method in subclasses to run code when Django starts.
-        """
+        import gather.users.signals  # noqa: F401, PLC0415

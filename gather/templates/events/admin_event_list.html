@@ -1,0 +1,64 @@
+{# gather/templates/events/admin_event_list.html #}
+{% extends "base.html" %}
+
+{% load i18n %}
+
+{% block title %}
+  {% translate "Modération des événements" %}
+{% endblock title %}
+{% block content %}
+  <h1 class="font-display text-2xl text-primary-600 mb-6">{% translate "File de modération" %}</h1>
+  <div class="flex flex-wrap gap-2 mb-6">
+    {% for value, label in statuts_disponibles %}
+      <a href="?statut={{ value }}"
+         class="px-3 py-1.5 rounded-seal text-xs font-medium border {% if request.GET.statut == value %}bg-primary-600 text-paper border-primary-600{% else %}bg-paper text-primary-600 border-primary-100 hover:bg-primary-50{% endif %}">
+        {{ label }}
+      </a>
+    {% endfor %}
+  </div>
+  <div class="space-y-3">
+    {% for event in evenements %}
+      <div class="bg-paper rounded-card shadow-card p-5 flex items-center justify-between gap-4">
+        <div class="flex items-center gap-4 min-w-0">
+          {% if event.image %}
+            <img src="{{ event.image.url }}"
+                 alt=""
+                 class="w-16 h-16 rounded-card object-cover flex-shrink-0" />
+          {% else %}
+            <div class="w-16 h-16 rounded-card bg-primary-50 flex items-center justify-center flex-shrink-0">
+              <span class="font-display text-primary-300 text-xl">{{ event.titre|slice:":1" }}</span>
+            </div>
+          {% endif %}
+          <div class="min-w-0">
+            <a href="{% url 'events:detail' event_id=event.id %}"
+               class="font-medium text-primary-600 hover:underline truncate block">{{ event.titre }}</a>
+            <p class="text-xs text-ink-muted mt-0.5">{{ event.organizer.user.email }} — {{ event.date_debut|date:"d/m/Y H:i" }}</p>
+          </div>
+        </div>
+        {% if event.statut == "pending" %}
+          <div class="flex items-center gap-2 flex-shrink-0">
+            <form method="post" action="{% url 'events:approuver' event_id=event.id %}">
+              {% csrf_token %}
+              <button type="submit"
+                      class="px-3 py-1.5 rounded-card text-xs font-medium bg-tertiary-500 text-paper hover:bg-tertiary-600">
+                {% translate "Approuver" %}
+              </button>
+            </form>
+            <a href="{% url 'events:demander_revision' event_id=event.id %}"
+               class="px-3 py-1.5 rounded-card text-xs font-medium bg-info-50 text-info-500 hover:bg-info-50/70">
+              {% translate "Révision" %}
+            </a>
+            <a href="{% url 'events:refuser' event_id=event.id %}"
+               class="px-3 py-1.5 rounded-card text-xs font-medium bg-danger-50 text-danger-500 hover:bg-danger-50/70">
+              {% translate "Refuser" %}
+            </a>
+          </div>
+        {% else %}
+          {% include "components/badge_seal.html" with label=event.get_statut_display tone="success" %}
+        {% endif %}
+      </div>
+    {% empty %}
+      <p class="text-center text-ink-muted py-16">{% translate "Aucun événement dans cette file." %}</p>
+    {% endfor %}
+  </div>
+{% endblock content %}

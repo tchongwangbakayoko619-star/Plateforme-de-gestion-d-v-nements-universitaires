@@ -7,8 +7,24 @@ from django.urls import path
 from django.views import defaults as default_views
 from django.views.generic import TemplateView
 
+from gather.dashboard.views import home_view
+from gather.payments.views import webhook_campay
+
 urlpatterns = [
-    path("", TemplateView.as_view(template_name="pages/home.html"), name="home"),
+    path("statistics/", include("gather.statistic.urls", namespace="statistics")),
+    path("dashboard/", include("gather.dashboard.urls", namespace="dashboard")),
+    path(
+        "inscriptions/",
+        include("gather.inscriptions.urls", namespace="inscriptions"),
+    ),
+    path(
+        "notifications/",
+        include("gather.notifications.urls", namespace="notifications"),
+    ),
+    path("api/campay/webhook/", webhook_campay),
+    path("payments/", include("gather.payments.urls", namespace="payments")),
+    path("events/", include("gather.events.urls", namespace="events")),
+    path("", home_view, name="home"),
     path(
         "about/",
         TemplateView.as_view(template_name="pages/about.html"),

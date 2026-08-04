@@ -63,6 +63,8 @@ jobs:
             'DB_PASSWORD=debug' \
             'DB_HOST=postgres' \
             'DB_PORT=5432' \
+            'CAMPAY_APP_USERNAME=ci-test-username' \
+            'CAMPAY_APP_PASSWORD=ci-test-password' \
             > .envs/.local/.django
 
           printf '%s\n' \
